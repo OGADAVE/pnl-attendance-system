@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+
+<title>Attendance Login</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:#020617;
+  color:white;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+}
+
+.container{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.card{
+  width:100%;
+  max-width:420px;
+  background:#1e293b;
+  padding:30px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.logo{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+.logo h1{
+  font-size:28px;
+  margin-bottom:6px;
+}
+
+.logo p{
+  opacity:0.7;
+}
+
+input{
+  width:100%;
+  padding:15px;
+  margin-top:15px;
+  border:none;
+  border-radius:10px;
+  background:#0f172a;
+  color:white;
+  font-size:15px;
+}
+
+input:focus{
+  outline:2px solid #22c55e;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  margin-top:20px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.2s ease;
+}
+
+button:hover{
+  opacity:0.95;
+}
+
+button:disabled{
+  opacity:0.7;
+  cursor:not-allowed;
+}
+
+.message{
+  margin-top:15px;
+  padding:12px;
+  border-radius:8px;
+  background:#0f172a;
+  text-align:center;
+  font-size:14px;
+  min-height:44px;
+}
+
+.small{
+  margin-top:15px;
+  font-size:13px;
+  opacity:0.7;
+  text-align:center;
+}
+
+.success{
+  color:#22c55e;
+}
+
+.error{
+  color:#ef4444;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <div class="logo">
+      <h1>Attendance System</h1>
+      <p>Secure Staff Login</p>
+    </div>
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email Address"
+      autocomplete="email"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
+
+    <button id="loginBtn">
+      Login
+    </button>
+
+    <div class="message" id="message">
+      Welcome back.
+    </div>
+
+    <p class="small">
+      Authorized staff only
+    </p>
+
+  </div>
+
+</div>
+
+<script type="module">
+
+import { auth, db }
+from "./js/firebase.js";
+
+import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  doc,
+  getDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const email =
+  document.getElementById("email");
+
+const password =
+  document.getElementById("password");
+
+const loginBtn =
+  document.getElementById("loginBtn");
+
+const message =
+  document.getElementById("message");
+
+function showMessage(text,type=""){
+
+  message.className =
+    `message ${type}`;
+
+  message.innerText = text;
+
+}
+
+async function redirectUser(user){
+
+  try {
+
+    const userRef =
+      doc(db,"users",user.uid);
+
+    const userSnap =
+      await getDoc(userRef);
+
+    if(!userSnap.exists()){
+
+      showMessage(
+        "User profile not found.",
+        "error"
+      );
+
+      return;
+
+    }
+
+    const data =
+      userSnap.data();
+
+    if(data.role === "admin"){
+
+      window.location.href =
+        "admin.html";
+
+      return;
+
+    }
+
+    window.location.href =
+      "dashboard.html";
+
+  } catch(err){
+
+    console.error(err);
+
+    showMessage(
+      err.message,
+      "error"
+    );
+
+  }
+
+}
+
+onAuthStateChanged(
+  auth,
+  async (user)=>{
+
+    if(user){
+
+      redirectUser(user);
+
+    }
+
+  }
+);
+
+loginBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      const emailValue =
+        email.value.trim();
+
+      const passwordValue =
+        password.value.trim();
+
+      if(!emailValue || !passwordValue){
+
+        throw new Error(
+          "Enter email and password."
+        );
+
+      }
+
+      loginBtn.disabled = true;
+
+      showMessage(
+        "Signing in..."
+      );
+
+      const cred =
+        await signInWithEmailAndPassword(
+          auth,
+          emailValue,
+          passwordValue
+        );
+
+      showMessage(
+        "Login successful.",
+        "success"
+      );
+
+      redirectUser(cred.user);
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(
+        err.message,
+        "error"
+      );
+
+    } finally {
+
+      loginBtn.disabled = false;
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>

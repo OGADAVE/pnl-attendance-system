@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+
+<title>Office Kiosk</title>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+
+:root{
+  --bg:#020617;
+  --card:#1e293b;
+  --card-dark:#0f172a;
+  --border:#334155;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --green:#22c55e;
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+  --purple:#6366f1;
+  --red:#ef4444;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo{
+  width:65px;
+  height:65px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid white;
+  background:white;
+}
+
+.brand h1{
+  font-size:24px;
+  font-weight:700;
+}
+
+.brand p{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.live-time{
+  text-align:right;
+}
+
+.live-time h2{
+  font-size:38px;
+  color:var(--green);
+}
+
+.live-time p{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin-top:20px;
+}
+
+.card h3{
+  margin-bottom:15px;
+  font-size:18px;
+}
+
+.status-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:15px;
+}
+
+.status-item{
+  background:var(--card-dark);
+  border-radius:12px;
+  padding:15px;
+}
+
+.status-item span{
+  display:block;
+  margin-top:8px;
+  font-weight:600;
+}
+
+.online{
+  color:var(--green);
+}
+
+.offline{
+  color:var(--red);
+}
+
+input{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  background:var(--card-dark);
+  color:white;
+  font-size:15px;
+  outline:none;
+  border:1px solid transparent;
+}
+
+input:focus{
+  border-color:var(--blue);
+}
+
+video{
+  width:100%;
+  margin-top:15px;
+  border-radius:16px;
+  background:black;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  border:1px solid var(--border);
+}
+
+button{
+  width:100%;
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  font-size:15px;
+  font-weight:600;
+  color:white;
+  cursor:pointer;
+  transition:0.2s ease;
+  margin-top:12px;
+}
+
+button:hover{
+  opacity:0.95;
+  transform:translateY(-1px);
+}
+
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.lookup{
+  background:var(--purple);
+}
+
+.bio{
+  background:var(--cyan);
+}
+
+.checkin{
+  background:var(--green);
+}
+
+.checkout{
+  background:var(--blue);
+}
+
+.reset{
+  background:var(--red);
+}
+
+.staff-card{
+  background:var(--card-dark);
+  border-radius:12px;
+  padding:15px;
+  margin-top:15px;
+  display:none;
+  border:1px solid var(--border);
+}
+
+.staff-card p{
+  margin-top:5px;
+  color:var(--muted);
+}
+
+.message{
+  margin-top:15px;
+  background:var(--card-dark);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  min-height:55px;
+  line-height:1.6;
+  font-size:14px;
+}
+
+.footer{
+  text-align:center;
+  margin-top:25px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.loading{
+  opacity:0.7;
+  pointer-events:none;
+}
+
+@media(max-width:700px){
+
+  .container{
+    padding:15px;
+  }
+
+  .header{
+    flex-direction:column;
+  }
+
+  .live-time{
+    text-align:left;
+  }
+
+  .status-grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+
+  <div class="header">
+
+    <div class="brand">
+
+      <img
+        src="./images/pln-logo.jpg"
+        alt="Company Logo"
+        class="logo"
+      />
+
+      <div>
+
+        <h1>
+          PEAKNOVA LIMITED
+        </h1>
+
+        <p>
+          Smart Attendance Kiosk
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="live-time">
+
+      <h2 id="liveClock">
+        00:00:00
+      </h2>
+
+      <p id="liveDate">
+        Loading...
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- STATUS -->
+
+  <div class="card">
+
+    <h3>System Status</h3>
+
+    <div class="status-grid">
+
+      <div class="status-item">
+        Internet
+        <span
+          id="internetStatus"
+          class="online"
+        >
+          Online
+        </span>
+      </div>
+
+      <div class="status-item">
+        Camera
+        <span id="cameraStatus">
+          Initializing...
+        </span>
+      </div>
+
+      <div class="status-item">
+        GPS
+        <span id="gpsStatus">
+          Checking...
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- STAFF LOOKUP -->
+
+  <div class="card">
+
+    <h3>Enter Staff ID</h3>
+
+    <input
+      type="text"
+      id="staffId"
+      placeholder="Example: PNL-001"
+      autocomplete="off"
+    />
+
+    <button
+      class="lookup"
+      id="lookupBtn"
+    >
+      Find Staff
+    </button>
+
+    <div
+      class="staff-card"
+      id="staffCard"
+    >
+
+      <h3 id="staffName">
+        Staff Name
+      </h3>
+
+      <p id="staffEmail">
+        staff@email.com
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- CAMERA -->
+
+  <div class="card">
+
+    <h3>Identity Verification</h3>
+
+    <video
+      id="video"
+      autoplay
+      muted
+      playsinline
+    ></video>
+
+    <button
+      class="bio"
+      id="bioBtn"
+      disabled
+    >
+      🔐 Verify Identity
+    </button>
+
+    <button
+      class="checkin"
+      id="checkinBtn"
+      disabled
+    >
+      Check In
+    </button>
+
+    <button
+      class="checkout"
+      id="checkoutBtn"
+      disabled
+    >
+      Check Out
+    </button>
+
+    <button
+      class="reset"
+      id="resetBtn"
+    >
+      Reset Kiosk
+    </button>
+
+    <div
+      class="message"
+      id="message"
+    >
+      Waiting for staff...
+    </div>
+
+  </div>
+
+  <div class="footer">
+    PEAKNOVA LIMITED • Smart Attendance System
+  </div>
+
+</div>
+
+<script type="module">
+
+import { db }
+from "./js/firebase.js";
+
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+  setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  startCamera,
+  verifyBiometric,
+  captureImage,
+  syncOfflineAttendance
+}
+from "./js/app.js";
+
+import {
+  saveOffline,
+  getLocation
+}
+from "./js/sync.js";
+
+// ======================================
+// HTTPS CHECK
+// ======================================
+
+if(
+  location.protocol !== "https:" &&
+  location.hostname !== "localhost"
+){
+
+  alert(
+    "This attendance system requires your camera and biometric support."
+  );
+
+}
+
+// ======================================
+// ELEMENTS
+// ======================================
+
+const video =
+  document.getElementById("video");
+
+const message =
+  document.getElementById("message");
+
+const lookupBtn =
+  document.getElementById("lookupBtn");
+
+const bioBtn =
+  document.getElementById("bioBtn");
+
+const checkinBtn =
+  document.getElementById("checkinBtn");
+
+const checkoutBtn =
+  document.getElementById("checkoutBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const staffIdInput =
+  document.getElementById("staffId");
+
+const staffCard =
+  document.getElementById("staffCard");
+
+const staffName =
+  document.getElementById("staffName");
+
+const staffEmail =
+  document.getElementById("staffEmail");
+
+const internetStatus =
+  document.getElementById("internetStatus");
+
+const gpsStatus =
+  document.getElementById("gpsStatus");
+
+const cameraStatus =
+  document.getElementById("cameraStatus");
+
+// ======================================
+// STATE
+// ======================================
+
+let currentStaff = null;
+let biometricVerified = false;
+let currentLocation = null;
+
+// ======================================
+// HELPERS
+// ======================================
+
+function showMessage(text){
+
+  message.innerText = text;
+
+}
+
+function resetKiosk(){
+
+  currentStaff = null;
+
+  biometricVerified = false;
+
+  staffIdInput.value = "";
+
+  staffCard.style.display =
+    "none";
+
+  bioBtn.disabled = true;
+
+  checkinBtn.disabled = true;
+
+  checkoutBtn.disabled = true;
+
+  showMessage(
+    "Waiting for staff..."
+  );
+
+}
+
+function getToday(){
+
+  return new Date()
+    .toISOString()
+    .split("T")[0];
+
+}
+
+function getAttendanceStatus(){
+
+  const now = new Date();
+
+  const mins =
+    now.getHours() * 60 +
+    now.getMinutes();
+
+  if(mins <= 510){
+
+    return "present";
+
+  }
+
+  if(mins <= 540){
+
+    return "late";
+
+  }
+
+  return "blocked";
+
+}
+
+// ======================================
+// CAMERA
+// ======================================
+
+try {
+
+  await startCamera(video);
+
+  cameraStatus.innerText =
+    "Camera Ready";
+
+} catch(err){
+
+  console.error(err);
+
+  cameraStatus.innerText =
+    "Camera Unavailable";
+
+  showMessage(
+    "Camera unavailable."
+  );
+
+}
+
+// ======================================
+// INTERNET STATUS
+// ======================================
+
+function updateInternet(){
+
+  if(navigator.onLine){
+
+    internetStatus.innerText =
+      "Online";
+
+    internetStatus.className =
+      "online";
+
+  } else {
+
+    internetStatus.innerText =
+      "Offline";
+
+    internetStatus.className =
+      "offline";
+
+  }
+
+}
+
+updateInternet();
+
+window.addEventListener(
+  "online",
+  ()=>{
+
+    updateInternet();
+
+    syncOfflineAttendance();
+
+  }
+);
+
+window.addEventListener(
+  "offline",
+  updateInternet
+);
+
+// ======================================
+// GPS
+// ======================================
+
+try {
+
+  currentLocation =
+    await getLocation();
+
+  gpsStatus.innerText =
+    "Location Available";
+
+} catch(err){
+
+  gpsStatus.innerText =
+    "Location Denied";
+
+}
+
+// ======================================
+// STAFF LOOKUP
+// ======================================
+
+lookupBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      lookupBtn.classList.add("loading");
+
+      const staffId =
+        staffIdInput.value.trim();
+
+      if(!staffId){
+
+        throw new Error(
+          "Enter staff ID."
+        );
+
+      }
+
+      const q =
+        query(
+          collection(db, "users"),
+          where("staffId", "==", staffId)
+        );
+
+      const snap =
+        await getDocs(q);
+
+      if(snap.empty){
+
+        throw new Error(
+          "Staff not found."
+        );
+
+      }
+
+      const docData =
+        snap.docs[0];
+
+      currentStaff = {
+        uid: docData.id,
+        ...docData.data()
+      };
+
+      staffName.innerText =
+        currentStaff.name;
+
+      staffEmail.innerText =
+        currentStaff.email;
+
+      staffCard.style.display =
+        "block";
+
+      bioBtn.disabled = false;
+
+      showMessage(
+        "Staff found. Verify identity."
+      );
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      lookupBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// BIOMETRIC
+// ======================================
+
+bioBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      bioBtn.classList.add("loading");
+
+      if(!window.PublicKeyCredential){
+
+        throw new Error(
+          "Biometric authentication not supported."
+        );
+
+      }
+
+      const result =
+        await verifyBiometric();
+
+      biometricVerified = true;
+
+      checkinBtn.disabled = false;
+
+      checkoutBtn.disabled = false;
+
+      showMessage(
+        result.message
+      );
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      bioBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// CHECK IN
+// ======================================
+
+checkinBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      checkinBtn.classList.add("loading");
+
+      if(!currentStaff){
+
+        throw new Error(
+          "No staff selected."
+        );
+
+      }
+
+      if(!biometricVerified){
+
+        throw new Error(
+          "Verify identity first."
+        );
+
+      }
+
+      const attendanceStatus =
+        getAttendanceStatus();
+
+      if(
+        attendanceStatus === "blocked"
+      ){
+
+        throw new Error(
+          "Check-in closed after 9:00 AM."
+        );
+
+      }
+
+      const today =
+        getToday();
+
+      const attendanceRef =
+        doc(
+          db,
+          "attendance",
+          `${currentStaff.uid}_${today}`
+        );
+
+      const existing =
+        await getDoc(attendanceRef);
+
+      if(existing.exists()){
+
+        throw new Error(
+          "Already checked in today."
+        );
+
+      }
+
+      const selfieUrl =
+        captureImage(video);
+
+      const attendanceData = {
+
+        userId:
+          currentStaff.uid,
+
+        name:
+          currentStaff.name,
+
+        email:
+          currentStaff.email,
+
+        date: today,
+
+        checkInTime:
+          new Date().toISOString(),
+
+        method: "kiosk",
+
+        status:
+          attendanceStatus,
+
+        selfieUrl,
+
+        biometricVerified:true,
+
+        location:
+          currentLocation,
+
+        offline:
+          !navigator.onLine,
+
+        synced:
+          navigator.onLine
+
+      };
+
+      if(!navigator.onLine){
+
+        saveOffline(
+          attendanceData
+        );
+
+      } else {
+
+        await setDoc(
+          attendanceRef,
+          attendanceData
+        );
+
+      }
+
+      showMessage(
+        "Check-in successful."
+      );
+
+      setTimeout(
+        resetKiosk,
+        4000
+      );
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      checkinBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// CHECK OUT
+// ======================================
+
+checkoutBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      checkoutBtn.classList.add("loading");
+
+      if(!currentStaff){
+
+        throw new Error(
+          "No staff selected."
+        );
+
+      }
+
+      if(!biometricVerified){
+
+        throw new Error(
+          "Verify identity first."
+        );
+
+      }
+
+      const now =
+        new Date();
+
+      const mins =
+        now.getHours() * 60 +
+        now.getMinutes();
+
+      if(mins < 990){
+
+        throw new Error(
+          "Cannot check out before 4:30 PM."
+        );
+
+      }
+
+      if(mins > 1110){
+
+        throw new Error(
+          "Check-out closed after 6:30 PM."
+        );
+
+      }
+
+      const today =
+        getToday();
+
+      const attendanceRef =
+        doc(
+          db,
+          "attendance",
+          `${currentStaff.uid}_${today}`
+        );
+
+      const snap =
+        await getDoc(attendanceRef);
+
+      if(!snap.exists()){
+
+        throw new Error(
+          "No check-in found."
+        );
+
+      }
+
+      await setDoc(
+        attendanceRef,
+        {
+          ...snap.data(),
+
+          checkOutTime:
+            new Date().toISOString()
+        }
+      );
+
+      showMessage(
+        "Check-out successful."
+      );
+
+      setTimeout(
+        resetKiosk,
+        4000
+      );
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      checkoutBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// RESET
+// ======================================
+
+resetBtn.addEventListener(
+  "click",
+  resetKiosk
+);
+
+// ======================================
+// INITIAL OFFLINE SYNC
+// ======================================
+
+syncOfflineAttendance();
+
+// ======================================
+// LIVE DATE & TIME
+// ======================================
+
+const liveClock =
+  document.getElementById("liveClock");
+
+const liveDate =
+  document.getElementById("liveDate");
+
+function updateClock(){
+
+  const now = new Date();
+
+  const time =
+    now.toLocaleTimeString(
+      "en-US",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+
+  const date =
+    now.toLocaleDateString(
+      "en-US",
+      {
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+  liveClock.innerText =
+    time;
+
+  liveDate.innerText =
+    date;
+
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+</script>
+
+</body>
+</html>

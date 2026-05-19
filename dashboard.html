@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+
+<title>Staff Dashboard</title>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+
+:root{
+  --bg:#020617;
+  --card:#0f172a;
+  --card-2:#1e293b;
+  --border:#334155;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --green:#22c55e;
+  --blue:#3b82f6;
+  --red:#ef4444;
+  --cyan:#06b6d4;
+  --yellow:#facc15;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid white;
+  background:white;
+}
+
+.brand h1{
+  font-size:22px;
+  font-weight:700;
+}
+
+.brand p{
+  margin-top:4px;
+  font-size:14px;
+  color:var(--muted);
+}
+
+.live-box{
+  text-align:right;
+}
+
+.live-box h2{
+  font-size:36px;
+  color:var(--green);
+  letter-spacing:1px;
+}
+
+.live-box p{
+  margin-top:5px;
+  font-size:14px;
+  color:var(--muted);
+}
+
+.card{
+  background:var(--card-2);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin-top:20px;
+}
+
+.card h3{
+  margin-bottom:15px;
+  font-size:18px;
+}
+
+.status-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.status-item{
+  background:var(--card);
+  padding:15px;
+  border-radius:12px;
+}
+
+.status-item span{
+  display:block;
+  margin-top:8px;
+  font-weight:600;
+}
+
+.online{
+  color:var(--green);
+}
+
+.offline{
+  color:var(--red);
+}
+
+video{
+  width:100%;
+  margin-top:15px;
+  border-radius:16px;
+  background:black;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  border:1px solid var(--border);
+}
+
+.button-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:18px;
+}
+
+button{
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s ease;
+  color:white;
+}
+
+button:hover{
+  transform:translateY(-1px);
+  opacity:0.95;
+}
+
+button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+.bio{
+  background:var(--cyan);
+}
+
+.checkin{
+  background:var(--green);
+}
+
+.checkout{
+  background:var(--blue);
+}
+
+.logout{
+  background:var(--red);
+  margin-top:15px;
+  width:100%;
+}
+
+.message{
+  margin-top:18px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  min-height:55px;
+  line-height:1.6;
+  font-size:14px;
+}
+
+.info{
+  margin-top:15px;
+  background:var(--card);
+  border-radius:12px;
+  padding:15px;
+  font-size:14px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.loading{
+  opacity:0.7;
+  pointer-events:none;
+}
+
+.footer{
+  text-align:center;
+  margin-top:25px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+@media(max-width:700px){
+
+  .container{
+    padding:15px;
+  }
+
+  .header{
+    flex-direction:column;
+  }
+
+  .live-box{
+    text-align:left;
+  }
+
+  .live-box h2{
+    font-size:30px;
+  }
+
+  .status-grid{
+    grid-template-columns:1fr;
+  }
+
+  .button-grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+
+  <div class="header">
+
+    <div class="brand">
+
+      <img
+        src="./images/pln-logo.jpg"
+        alt="Logo"
+        class="logo"
+      />
+
+      <div>
+        <h1>PEAKNOVA LIMITED</h1>
+        <p>Smart Attendance System</p>
+      </div>
+
+    </div>
+
+    <div class="live-box">
+
+      <h2 id="liveClock">
+        00:00:00
+      </h2>
+
+      <p id="liveDate">
+        Loading...
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- STATUS -->
+
+  <div class="card">
+
+    <h3>System Status</h3>
+
+    <div class="status-grid">
+
+      <div class="status-item">
+        Internet
+        <span
+          id="internetStatus"
+          class="online"
+        >
+          Online
+        </span>
+      </div>
+
+      <div class="status-item">
+        GPS
+        <span id="gpsStatus">
+          Checking...
+        </span>
+      </div>
+
+      <div class="status-item">
+        Camera
+        <span id="cameraStatus">
+          Initializing...
+        </span>
+      </div>
+
+      <div class="status-item">
+        User
+        <span id="welcomeText">
+          Loading...
+        </span>
+      </div>
+
+    </div>
+
+    <div class="info">
+      Office Location:
+      Plot 641, AB Close, 1st Avenue,
+      Gwarinpa, Abuja.
+    </div>
+
+  </div>
+
+  <!-- CAMERA -->
+
+  <div class="card">
+
+    <h3>Identity Verification</h3>
+
+    <video
+      id="video"
+      autoplay
+      muted
+      playsinline
+    ></video>
+
+    <div class="button-grid">
+
+      <button
+        class="bio"
+        id="bioBtn"
+      >
+        🔐 Verify Identity
+      </button>
+
+      <button
+        class="checkin"
+        id="checkinBtn"
+      >
+        Check In
+      </button>
+
+      <button
+        class="checkout"
+        id="checkoutBtn"
+      >
+        Check Out
+      </button>
+
+      <button
+        class="logout"
+        id="logoutBtn"
+      >
+        Logout
+      </button>
+
+    </div>
+
+    <div
+      class="message"
+      id="message"
+    >
+      System ready.
+    </div>
+
+  </div>
+
+  <div class="footer">
+    PEAKNOVA LIMITED • Smart Attendance System
+  </div>
+
+</div>
+
+<script type="module">
+
+import { auth }
+from "./js/firebase.js";
+
+import {
+  protectPage,
+  logoutUser
+}
+from "./js/auth.js";
+
+import {
+  startCamera,
+  checkIn,
+  checkOut,
+  verifyBiometric,
+  syncOfflineAttendance
+}
+from "./js/app.js";
+
+// ======================================
+// HTTPS CHECK
+// ======================================
+
+if(
+  location.protocol !== "https:" &&
+  location.hostname !== "localhost"
+){
+
+  alert(
+    "This attendance system requires your camera, location and biometric support."
+  );
+
+}
+
+// ======================================
+// ELEMENTS
+// ======================================
+
+const video =
+  document.getElementById("video");
+
+const message =
+  document.getElementById("message");
+
+const welcomeText =
+  document.getElementById("welcomeText");
+
+const internetStatus =
+  document.getElementById("internetStatus");
+
+const gpsStatus =
+  document.getElementById("gpsStatus");
+
+const cameraStatus =
+  document.getElementById("cameraStatus");
+
+const checkinBtn =
+  document.getElementById("checkinBtn");
+
+const checkoutBtn =
+  document.getElementById("checkoutBtn");
+
+const bioBtn =
+  document.getElementById("bioBtn");
+
+const logoutBtn =
+  document.getElementById("logoutBtn");
+
+// ======================================
+// MESSAGE
+// ======================================
+
+function showMessage(text){
+
+  message.innerText = text;
+
+}
+
+// ======================================
+// PAGE PROTECTION
+// ======================================
+
+protectPage(null, async (user, userData)=>{
+
+  welcomeText.innerText = user.email;
+
+  // CAMERA
+
+  try {
+
+    await startCamera(video);
+
+    cameraStatus.innerText =
+      "Camera Ready";
+
+  } catch(err){
+
+    console.error(err);
+
+    cameraStatus.innerText =
+      "Camera Unavailable";
+
+    showMessage(
+      "Camera access denied or unavailable."
+    );
+
+  }
+
+});
+
+// ======================================
+// INTERNET STATUS
+// ======================================
+
+function updateInternetStatus(){
+
+  if(navigator.onLine){
+
+    internetStatus.innerText =
+      "Online";
+
+    internetStatus.className =
+      "online";
+
+  } else {
+
+    internetStatus.innerText =
+      "Offline";
+
+    internetStatus.className =
+      "offline";
+
+  }
+
+}
+
+updateInternetStatus();
+
+window.addEventListener(
+  "online",
+  ()=>{
+
+    updateInternetStatus();
+
+    syncOfflineAttendance();
+
+    showMessage(
+      "Internet restored. Offline attendance synced."
+    );
+
+  }
+);
+
+window.addEventListener(
+  "offline",
+  ()=>{
+
+    updateInternetStatus();
+
+    showMessage(
+      "Offline mode enabled."
+    );
+
+  }
+);
+
+// ======================================
+// GPS
+// ======================================
+
+navigator.geolocation.getCurrentPosition(
+
+  ()=>{
+
+    gpsStatus.innerText =
+      "Location Available";
+
+  },
+
+  ()=>{
+
+    gpsStatus.innerText =
+      "Location Denied";
+
+  },
+
+  {
+    enableHighAccuracy:true,
+    timeout:10000,
+    maximumAge:0
+  }
+
+);
+
+// ======================================
+// BIOMETRIC
+// ======================================
+
+bioBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      bioBtn.classList.add("loading");
+
+      if(!window.PublicKeyCredential){
+
+        throw new Error(
+          "Biometric authentication is not supported on this device."
+        );
+
+      }
+
+      const result =
+        await verifyBiometric();
+
+      showMessage(result.message);
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      bioBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// CHECK IN
+// ======================================
+
+checkinBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      checkinBtn.classList.add("loading");
+
+      const result =
+        await checkIn({
+
+          videoElement: video,
+
+          method: navigator.onLine
+            ? "mobile"
+            : "offline"
+
+        });
+
+      showMessage(result.message);
+
+      if(result.success){
+
+        checkinBtn.disabled = true;
+
+      }
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      checkinBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// CHECK OUT
+// ======================================
+
+checkoutBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    try {
+
+      checkoutBtn.classList.add("loading");
+
+      const result =
+        await checkOut();
+
+      showMessage(result.message);
+
+      if(result.success){
+
+        checkoutBtn.disabled = true;
+
+      }
+
+    } catch(err){
+
+      console.error(err);
+
+      showMessage(err.message);
+
+    } finally {
+
+      checkoutBtn.classList.remove("loading");
+
+    }
+
+  }
+);
+
+// ======================================
+// INITIAL OFFLINE SYNC
+// ======================================
+
+syncOfflineAttendance();
+
+// ======================================
+// LOGOUT
+// ======================================
+
+logoutBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    await logoutUser();
+
+  }
+);
+
+// ======================================
+// LIVE CLOCK
+// ======================================
+
+const liveClock =
+  document.getElementById("liveClock");
+
+const liveDate =
+  document.getElementById("liveDate");
+
+function updateClock(){
+
+  const now = new Date();
+
+  const time =
+    now.toLocaleTimeString(
+      "en-US",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+
+  const date =
+    now.toLocaleDateString(
+      "en-US",
+      {
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+  liveClock.innerText =
+    time;
+
+  liveDate.innerText =
+    date;
+
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+</script>
+
+</body>
+</html>

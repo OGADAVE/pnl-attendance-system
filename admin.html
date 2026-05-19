@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
+
+<title>Admin Dashboard</title>
+
+<style>
+
+:root{
+  --bg:#020617;
+  --card:#1e293b;
+  --card2:#0f172a;
+  --border:#334155;
+  --text:#ffffff;
+  --muted:#94a3b8;
+  --green:#22c55e;
+  --blue:#3b82f6;
+  --red:#ef4444;
+  --orange:#f97316;
+  --yellow:#facc15;
+  --purple:#6366f1;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial, sans-serif;
+  min-height:100vh;
+  padding:20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.header-left h1{
+  font-size:28px;
+}
+
+.header-left p{
+  margin-top:5px;
+  color:var(--muted);
+}
+
+.live-time{
+  text-align:center;
+}
+
+.live-time h2{
+  font-size:42px;
+  color:var(--green);
+  letter-spacing:2px;
+}
+
+.live-time p{
+  margin-top:6px;
+  color:var(--muted);
+}
+
+.header-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  border:none;
+  border-radius:10px;
+  padding:12px 18px;
+  cursor:pointer;
+  color:white;
+  font-weight:600;
+  transition:0.2s ease;
+}
+
+button:hover{
+  opacity:0.95;
+}
+
+button:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.add{
+  background:var(--green);
+}
+
+.export{
+  background:#0ea5e9;
+}
+
+.logout{
+  background:var(--red);
+}
+
+.apply{
+  background:var(--purple);
+}
+
+.override{
+  background:var(--orange);
+}
+
+.controls{
+  margin-top:25px;
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+}
+
+.controls input,
+.controls select{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:var(--card);
+  color:white;
+  outline:none;
+}
+
+.stats-grid{
+  margin-top:25px;
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+}
+
+.stat-card{
+  background:var(--card);
+  padding:20px;
+  border-radius:14px;
+}
+
+.stat-card h3{
+  font-size:14px;
+  color:var(--muted);
+}
+
+.stat-card p{
+  margin-top:10px;
+  font-size:28px;
+  font-weight:bold;
+}
+
+.table-card{
+  margin-top:25px;
+  background:var(--card);
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+
+.table-wrapper{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1100px;
+}
+
+th,
+td{
+  padding:14px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+}
+
+th{
+  background:var(--card2);
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+
+tbody tr:hover{
+  background:rgba(255,255,255,0.03);
+}
+
+.status-present{
+  color:var(--green);
+  font-weight:bold;
+}
+
+.status-late{
+  color:var(--yellow);
+  font-weight:bold;
+}
+
+.status-absent{
+  color:var(--red);
+  font-weight:bold;
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  background:var(--card2);
+  font-size:12px;
+}
+
+.selfie{
+  width:50px;
+  height:50px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.empty{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  z-index:999;
+}
+
+.modal-content{
+  width:100%;
+  max-width:450px;
+  background:var(--card);
+  border-radius:16px;
+  padding:25px;
+}
+
+.modal-content h2{
+  margin-bottom:20px;
+}
+
+.modal-content input{
+  width:100%;
+  margin-bottom:12px;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:var(--card2);
+  color:white;
+  outline:none;
+}
+
+.modal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.modal-actions button{
+  flex:1;
+}
+
+.close-btn{
+  background:var(--red);
+}
+
+.create-btn{
+  background:var(--green);
+}
+
+.loading{
+  opacity:0.7;
+  pointer-events:none;
+}
+
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:var(--card);
+  border-left:5px solid var(--green);
+  padding:16px;
+  border-radius:12px;
+  min-width:260px;
+  display:none;
+  z-index:9999;
+}
+
+.toast.error{
+  border-left-color:var(--red);
+}
+
+@media(max-width:768px){
+
+  body{
+    padding:15px;
+  }
+
+  .live-time h2{
+    font-size:30px;
+  }
+
+  .header{
+    flex-direction:column;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<div class="header">
+
+  <div class="header-left">
+    <h1>Admin Dashboard</h1>
+    <p id="adminName">
+      Welcome back
+    </p>
+  </div>
+
+  <div class="live-time">
+
+    <h2 id="liveClock">
+      00:00:00
+    </h2>
+
+    <p id="liveDate">
+      Loading date...
+    </p>
+
+  </div>
+
+  <div class="header-actions">
+
+    <button
+      class="add"
+      id="addStaffBtn"
+    >
+      + Add Staff
+    </button>
+
+    <button
+      class="export"
+      id="exportBtn"
+    >
+      Export CSV
+    </button>
+
+    <button
+      class="logout"
+      id="logoutBtn"
+    >
+      Logout
+    </button>
+
+  </div>
+
+</div>
+
+<!-- STATS -->
+
+<div class="stats-grid">
+
+  <div class="stat-card">
+    <h3>Total Staff</h3>
+    <p id="totalStaff">
+      0
+    </p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Present</h3>
+    <p id="presentCount">
+      0
+    </p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Late</h3>
+    <p id="lateCount">
+      0
+    </p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Absent</h3>
+    <p id="absentCount">
+      0
+    </p>
+  </div>
+
+</div>
+
+<!-- CONTROLS -->
+
+<div class="controls">
+
+  <input
+    type="date"
+    id="dateFilter"
+  />
+
+  <input
+    type="text"
+    id="search"
+    placeholder="Search by name or email"
+  />
+
+  <select id="statusFilter">
+
+    <option value="all">
+      All Status
+    </option>
+
+    <option value="present">
+      Present
+    </option>
+
+    <option value="late">
+      Late
+    </option>
+
+    <option value="absent">
+      Absent
+    </option>
+
+  </select>
+
+  <button
+    class="apply"
+    id="applyBtn"
+  >
+    Apply Filters
+  </button>
+
+</div>
+
+<!-- TABLE -->
+
+<div class="table-card">
+
+  <div class="table-wrapper">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Method</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Selfie</th>
+          <th>Actions</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="tableBody">
+
+        <tr>
+
+          <td
+            colspan="8"
+            class="empty"
+          >
+            Loading attendance...
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<!-- MODAL -->
+
+<div
+  class="modal"
+  id="modal"
+>
+
+  <div class="modal-content">
+
+    <h2>Create Staff Account</h2>
+
+    <input
+      type="text"
+      id="name"
+      placeholder="Full Name"
+    />
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email Address"
+    />
+
+    <input
+      type="text"
+      id="staffId"
+      placeholder="Staff ID (e.g PNL-001)"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    />
+
+    <div class="modal-actions">
+
+      <button
+        class="create-btn"
+        id="createBtn"
+      >
+        Create Staff
+      </button>
+
+      <button
+        class="close-btn"
+        id="closeBtn"
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TOAST -->
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+<script type="module">
+
+import {
+  auth,
+  db
+}
+from "./js/firebase.js";
+
+import {
+  protectPage,
+  logoutUser
+}
+from "./js/auth.js";
+
+import {
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  getDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  createUserWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// ======================================
+// ELEMENTS
+// ======================================
+
+const tableBody =
+  document.getElementById("tableBody");
+
+const adminName =
+  document.getElementById("adminName");
+
+const totalStaff =
+  document.getElementById("totalStaff");
+
+const presentCount =
+  document.getElementById("presentCount");
+
+const lateCount =
+  document.getElementById("lateCount");
+
+const absentCount =
+  document.getElementById("absentCount");
+
+const addStaffBtn =
+  document.getElementById("addStaffBtn");
+
+const modal =
+  document.getElementById("modal");
+
+const closeBtn =
+  document.getElementById("closeBtn");
+
+const createBtn =
+  document.getElementById("createBtn");
+
+const logoutBtn =
+  document.getElementById("logoutBtn");
+
+const applyBtn =
+  document.getElementById("applyBtn");
+
+const exportBtn =
+  document.getElementById("exportBtn");
+
+const toast =
+  document.getElementById("toast");
+
+// ======================================
+// STATE
+// ======================================
+
+let users = [];
+let attendance = [];
+
+// ======================================
+// TOAST
+// ======================================
+
+function showToast(
+  text,
+  type = "success"
+){
+
+  toast.innerText = text;
+
+  toast.className =
+    `toast ${type}`;
+
+  toast.style.display = "block";
+
+  setTimeout(() => {
+
+    toast.style.display = "none";
+
+  }, 4000);
+
+}
+
+// ======================================
+// PROTECT PAGE
+// ======================================
+
+protectPage("admin", (user, userData) => {
+  adminName.innerText =
+    `Welcome, ${userData.name}`;
+  initializeRealtime();
+});
+
+// ======================================
+// REALTIME LISTENERS
+// ======================================
+
+function initializeRealtime(){
+
+  onSnapshot(
+    collection(db, "users"),
+    (snap) => {
+
+      users =
+        snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      render();
+
+    }
+  );
+
+  onSnapshot(
+    collection(db, "attendance"),
+    (snap) => {
+
+      attendance =
+        snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      render();
+
+    }
+  );
+
+}
+
+// ======================================
+// RENDER TABLE
+// ======================================
+
+function render(){
+
+  const search =
+    document
+    .getElementById("search")
+    .value
+    .toLowerCase();
+
+  const statusFilter =
+    document
+    .getElementById("statusFilter")
+    .value;
+
+  const selectedDate =
+    document
+    .getElementById("dateFilter")
+    .value;
+
+  tableBody.innerHTML = "";
+
+  const staffUsers =
+    users.filter(
+      user => user.role === "staff"
+    );
+
+  let present = 0;
+  let late = 0;
+  let absent = 0;
+
+  staffUsers.forEach(user => {
+
+    const record =
+      attendance.find(a => {
+
+        return (
+          a.userId === user.userId &&
+          (
+            !selectedDate ||
+            a.date === selectedDate
+          )
+        );
+
+      });
+
+    let status = "absent";
+    let method = "-";
+    let checkIn = "-";
+    let checkOut = "-";
+    let selfie = "";
+
+    if(record){
+
+      status =
+        record.status || "present";
+
+      method =
+        record.method || "-";
+
+      checkIn =
+        record.checkInTime
+        ? new Date(
+            record.checkInTime
+          ).toLocaleTimeString()
+        : "-";
+
+      checkOut =
+        record.checkOutTime
+        ? new Date(
+            record.checkOutTime
+          ).toLocaleTimeString()
+        : "-";
+
+      selfie =
+        record.selfieUrl || "";
+
+    }
+
+    // STATS
+
+    if(status === "present"){
+      present++;
+    } else if(status === "late"){
+      late++;
+    } else {
+      absent++;
+    }
+
+    // FILTERS
+
+    if(
+      statusFilter !== "all" &&
+      status !== statusFilter
+    ){
+      return;
+    }
+
+    if(
+      search &&
+      !user.name
+        .toLowerCase()
+        .includes(search) &&
+      !user.email
+        .toLowerCase()
+        .includes(search)
+    ){
+      return;
+    }
+
+    tableBody.innerHTML += `
+
+      <tr>
+
+        <td>
+          ${user.name}
+        </td>
+
+        <td>
+          ${user.email}
+        </td>
+
+        <td>
+          <span class="status-${status}">
+            ${status}
+          </span>
+        </td>
+
+        <td>
+          <span class="badge">
+            ${method}
+          </span>
+        </td>
+
+        <td>
+          ${checkIn}
+        </td>
+
+        <td>
+          ${checkOut}
+        </td>
+
+        <td>
+
+          ${
+            selfie
+            ? `
+              <img
+                src="${selfie}"
+                class="selfie"
+              />
+            `
+            : "-"
+          }
+
+        </td>
+
+        <td>
+
+          <div class="actions">
+
+            <button
+              class="override"
+              onclick="overrideCheckIn('${user.userId}')"
+            >
+              Check In
+            </button>
+
+            <button
+              class="override"
+              onclick="overrideCheckOut('${user.userId}')"
+            >
+              Check Out
+            </button>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+  totalStaff.innerText =
+    staffUsers.length;
+
+  presentCount.innerText =
+    present;
+
+  lateCount.innerText =
+    late;
+
+  absentCount.innerText =
+    absent;
+
+  if(!tableBody.innerHTML){
+
+    tableBody.innerHTML = `
+      <tr>
+        <td
+          colspan="8"
+          class="empty"
+        >
+          No attendance records found
+        </td>
+      </tr>
+    `;
+
+  }
+
+}
+
+// ======================================
+// MODAL
+// ======================================
+
+addStaffBtn.addEventListener(
+  "click",
+  () => {
+
+    modal.style.display =
+      "flex";
+
+  }
+);
+
+closeBtn.addEventListener(
+  "click",
+  () => {
+
+    modal.style.display =
+      "none";
+
+  }
+);
+
+// ======================================
+// CREATE STAFF
+// ======================================
+
+createBtn.addEventListener(
+  "click",
+  async () => {
+
+    try {
+
+      createBtn.classList.add(
+        "loading"
+      );
+
+      const name =
+        document
+        .getElementById("name")
+        .value
+        .trim();
+
+      const email =
+        document
+        .getElementById("email")
+        .value
+        .trim();
+
+      const staffId =
+        document
+        .getElementById("staffId")
+        .value
+        .trim();
+
+      const password =
+        document
+        .getElementById("password")
+        .value
+        .trim();
+
+      if(
+        !name ||
+        !email ||
+        !staffId ||
+        !password
+      ){
+
+        throw new Error(
+          "All fields are required."
+        );
+
+      }
+
+      const credential =
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      await setDoc(
+        doc(
+          db,
+          "users",
+          credential.user.uid
+        ),
+        {
+          userId:
+            credential.user.uid,
+
+          name,
+          email,
+          staffId,
+
+          role:"staff",
+
+          isActive:true,
+
+          createdAt:
+            new Date().toISOString()
+        }
+      );
+
+      showToast(
+        "Staff account created successfully."
+      );
+
+      modal.style.display =
+        "none";
+
+      location.reload();
+
+    } catch(error){
+
+      console.error(error);
+
+      showToast(
+        error.message,
+        "error"
+      );
+
+    } finally {
+
+      createBtn.classList.remove(
+        "loading"
+      );
+
+    }
+
+  }
+);
+
+// ======================================
+// OVERRIDE CHECK-IN
+// ======================================
+
+window.overrideCheckIn =
+async function(userId){
+
+  try {
+
+    const today =
+      new Date()
+      .toISOString()
+      .split("T")[0];
+
+    await setDoc(
+      doc(
+        db,
+        "attendance",
+        `${userId}_${today}`
+      ),
+      {
+        userId,
+        date:today,
+
+        checkInTime:
+          new Date().toISOString(),
+
+        method:"manual",
+
+        status:"present",
+
+        overridden:true
+      },
+      { merge:true }
+    );
+
+    showToast(
+      "Manual check-in completed."
+    );
+
+  } catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+};
+
+// ======================================
+// OVERRIDE CHECK-OUT
+// ======================================
+
+window.overrideCheckOut =
+async function(userId){
+
+  try {
+
+    const today =
+      new Date()
+      .toISOString()
+      .split("T")[0];
+
+    const ref =
+      doc(
+        db,
+        "attendance",
+        `${userId}_${today}`
+      );
+
+    const snap =
+      await getDoc(ref);
+
+    if(!snap.exists()){
+
+      throw new Error(
+        "No attendance found."
+      );
+
+    }
+
+    await setDoc(
+      ref,
+      {
+        ...snap.data(),
+
+        checkOutTime:
+          new Date().toISOString(),
+
+        overridden:true
+      }
+    );
+
+    showToast(
+      "Manual check-out completed."
+    );
+
+  } catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message,
+      "error"
+    );
+
+  }
+
+};
+
+// ======================================
+// EXPORT CSV
+// ======================================
+
+exportBtn.addEventListener(
+  "click",
+  () => {
+
+    let csv =
+`Name,Email,Status,Method,CheckIn,CheckOut\n`;
+
+    document
+      .querySelectorAll("tbody tr")
+      .forEach(row => {
+
+        const cols =
+          row.querySelectorAll("td");
+
+        if(cols.length < 6) return;
+
+        let arr = [];
+
+        cols.forEach((col,index)=>{
+
+          if(index < 6){
+
+            arr.push(
+              `"${col.innerText.trim()}"`
+            );
+
+          }
+
+        });
+
+        csv +=
+          arr.join(",") + "\n";
+
+      });
+
+    const blob =
+      new Blob([csv], {
+        type:"text/csv"
+      });
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const a =
+      document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+      "attendance-report.csv";
+
+    a.click();
+
+  }
+);
+
+// ======================================
+// APPLY FILTERS
+// ======================================
+
+applyBtn.addEventListener(
+  "click",
+  render
+);
+
+// ======================================
+// LOGOUT
+// ======================================
+
+logoutBtn.addEventListener(
+  "click",
+  async () => {
+
+    await logoutUser();
+
+  }
+);
+
+// ======================================
+// LIVE CLOCK
+// ======================================
+
+const liveClock =
+  document.getElementById("liveClock");
+
+const liveDate =
+  document.getElementById("liveDate");
+
+function updateClock(){
+
+  const now =
+    new Date();
+
+  liveClock.innerText =
+    now.toLocaleTimeString(
+      "en-US",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+
+  liveDate.innerText =
+    now.toLocaleDateString(
+      "en-US",
+      {
+        weekday:"long",
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+</script>
+
+</body>
+</html>
