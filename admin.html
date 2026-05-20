@@ -601,7 +601,8 @@ import {
   onSnapshot,
   doc,
   setDoc,
-  getDoc
+  getDoc,
+  serverTimestamp
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -688,14 +689,64 @@ function showToast(
 }
 
 // ======================================
+// HELPERS
+// ======================================
+
+function getToday(){
+
+  return new Date()
+    .toISOString()
+    .split("T")[0];
+
+}
+
+function getAttendanceRecord(
+  userId,
+  selectedDate
+){
+
+  return attendance.find(a => {
+
+    return (
+      a.userId === userId &&
+      (
+        !selectedDate ||
+        a.date === selectedDate
+      )
+    );
+
+  });
+
+}
+
+function safeValue(value){
+
+  if(
+    value === undefined ||
+    value === null
+  ){
+    return "";
+  }
+
+  return String(value);
+
+}
+
+// ======================================
 // PROTECT PAGE
 // ======================================
 
-protectPage("admin", (user, userData) => {
-  adminName.innerText =
-    `Welcome, ${userData.name}`;
-  initializeRealtime();
-});
+protectPage(
+  "admin",
+  (user, userData) => {
+
+    adminName.innerText =
+      `Welcome, ${userData.name || "Admin"}`;
+
+    initializeRealtime();
+
+  }
+);
 
 // ======================================
 // REALTIME LISTENERS
@@ -742,27 +793,37 @@ function initializeRealtime(){
 function render(){
 
   const search =
-    document
-    .getElementById("search")
-    .value
+    safeValue(
+      document
+      .getElementById("search")
+      .value
+    )
     .toLowerCase();
 
   const statusFilter =
-    document
-    .getElementById("statusFilter")
-    .value;
+    safeValue(
+      document
+      .getElementById("statusFilter")
+      .value
+    );
 
   const selectedDate =
-    document
-    .getElementById("dateFilter")
-    .value;
+    safeValue(
+      document
+      .getElementById("dateFilter")
+      .value
+    );
 
   tableBody.innerHTML = "";
 
   const staffUsers =
-    users.filter(
-      user => user.role === "staff"
-    );
+    users.filter(user => {
+
+      return (
+        user.role === "staff"
+      );
+
+    });
 
   let present = 0;
   let late = 0;
@@ -770,18 +831,14 @@ function render(){
 
   staffUsers.forEach(user => {
 
+    const userId =
+      user.userId || user.id;
+
     const record =
-      attendance.find(a => {
-
-        return (
-          a.userId === user.userId &&
-          (
-            !selectedDate ||
-            a.date === selectedDate
-          )
-        );
-
-      });
+      getAttendanceRecord(
+        user.id,
+        selectedDate
+      );
 
     let status = "absent";
     let method = "-";
@@ -798,35 +855,65 @@ function render(){
         record.method || "-";
 
       checkIn =
-        record.checkInTime
-        ? new Date(
-            record.checkInTime
-          ).toLocaleTimeString()
-        : "-";
+  record.checkInTime
+  ? record.checkInTime
+      .toDate()
+      .toLocaleTimeString()
+  : "-";
 
-      checkOut =
-        record.checkOutTime
-        ? new Date(
-            record.checkOutTime
-          ).toLocaleTimeString()
-        : "-";
+checkOut =
+  record.checkOutTime
+  ? record.checkOutTime
+      .toDate()
+      .toLocaleTimeString()
+  : "-";
 
       selfie =
         record.selfieUrl || "";
 
     }
 
+    // ======================================
     // STATS
+    // ======================================
 
     if(status === "present"){
+
       present++;
+
     } else if(status === "late"){
+
       late++;
+
     } else {
+
       absent++;
+
     }
 
-    // FILTERS
+    // ======================================
+    // SEARCH FILTER
+    // ======================================
+
+    const safeName =
+      safeValue(user.name)
+      .toLowerCase();
+
+    const safeEmail =
+      safeValue(user.email)
+      .toLowerCase();
+
+    if(
+      search &&
+      !safeName.includes(search) &&
+      !safeEmail.includes(search)
+    ){
+      return;
+    }
+
+    // ======================================
+    // STATUS FILTER
+    // ======================================
 
     if(
       statusFilter !== "all" &&
@@ -835,28 +922,26 @@ function render(){
       return;
     }
 
-    if(
-      search &&
-      !user.name
-        .toLowerCase()
-        .includes(search) &&
-      !user.email
-        .toLowerCase()
-        .includes(search)
-    ){
-      return;
-    }
+    // ======================================
+    // BUTTON STATES
+    // ======================================
+
+    const checkedIn =
+      !!record?.checkInTime;
+
+    const checkedOut =
+      !!record?.checkOutTime;
 
     tableBody.innerHTML += `
 
       <tr>
 
         <td>
-          ${user.name}
+          ${safeValue(user.name) || "-"}
         </td>
 
         <td>
-          ${user.email}
+          ${safeValue(user.email) || "-"}
         </td>
 
         <td>
@@ -900,16 +985,34 @@ function render(){
 
             <button
               class="override"
-              onclick="overrideCheckIn('${user.userId}')"
+              onclick="overrideCheckIn(event, '${user.id}')"
+              ${
+                checkedIn
+                ? "disabled"
+                : ""
+              }
             >
-              Check In
+              ${
+                checkedIn
+                ? "Checked In"
+                : "Check In"
+              }
             </button>
 
             <button
               class="override"
-              onclick="overrideCheckOut('${user.userId}')"
+              onclick="overrideCheckOut(event, '${user.id}')"
+              ${
+                !checkedIn || checkedOut
+                ? "disabled"
+                : ""
+              }
             >
-              Check Out
+              ${
+                checkedOut
+                ? "Checked Out"
+                : "Check Out"
+              }
             </button>
 
           </div>
@@ -922,6 +1025,10 @@ function render(){
 
   });
 
+  // ======================================
+  // UPDATE STATS
+  // ======================================
+
   totalStaff.innerText =
     staffUsers.length;
 
@@ -933,6 +1040,10 @@ function render(){
 
   absentCount.innerText =
     absent;
+
+  // ======================================
+  // EMPTY STATE
+  // ======================================
 
   if(!tableBody.innerHTML){
 
@@ -990,28 +1101,39 @@ createBtn.addEventListener(
       );
 
       const name =
-        document
-        .getElementById("name")
-        .value
-        .trim();
+        safeValue(
+          document
+          .getElementById("name")
+          .value
+        ).trim();
 
       const email =
-        document
-        .getElementById("email")
-        .value
-        .trim();
+        safeValue(
+          document
+          .getElementById("email")
+          .value
+        ).trim();
 
       const staffId =
-        document
-        .getElementById("staffId")
-        .value
-        .trim();
+        safeValue(
+          document
+          .getElementById("staffId")
+          .value
+        ).trim();
+
+      const department =
+        safeValue(
+          document
+          .getElementById("department")
+          ?.value
+        ).trim();
 
       const password =
-        document
-        .getElementById("password")
-        .value
-        .trim();
+        safeValue(
+          document
+          .getElementById("password")
+          .value
+        ).trim();
 
       if(
         !name ||
@@ -1040,19 +1162,13 @@ createBtn.addEventListener(
           credential.user.uid
         ),
         {
-          userId:
-            credential.user.uid,
-
           name,
           email,
           staffId,
-
+          department,
           role:"staff",
-
           isActive:true,
-
-          createdAt:
-            new Date().toISOString()
+          createdAt: serverTimestamp()
         }
       );
 
@@ -1062,8 +1178,6 @@ createBtn.addEventListener(
 
       modal.style.display =
         "none";
-
-      location.reload();
 
     } catch(error){
 
@@ -1090,14 +1204,30 @@ createBtn.addEventListener(
 // ======================================
 
 window.overrideCheckIn =
-async function(userId){
+async function(
+  event,
+  userId
+){
+
+  const button =
+    event.target;
 
   try {
 
+    button.disabled = true;
+
     const today =
-      new Date()
-      .toISOString()
-      .split("T")[0];
+      getToday();
+
+    const user =
+      users.find(u => {
+
+        return (
+          (u.userId || u.id)
+          === userId
+        );
+
+      });
 
     await setDoc(
       doc(
@@ -1107,10 +1237,19 @@ async function(userId){
       ),
       {
         userId,
+
+        name:
+          user?.name || "",
+
+        email:
+          user?.email || "",
+
+        department:
+          user?.department || "",
+
         date:today,
 
-        checkInTime:
-          new Date().toISOString(),
+        checkInTime: serverTimestamp(),
 
         method:"manual",
 
@@ -1129,6 +1268,8 @@ async function(userId){
 
     console.error(error);
 
+    button.disabled = false;
+
     showToast(
       error.message,
       "error"
@@ -1143,14 +1284,20 @@ async function(userId){
 // ======================================
 
 window.overrideCheckOut =
-async function(userId){
+async function(
+  event,
+  userId
+){
+
+  const button =
+    event.target;
 
   try {
 
+    button.disabled = true;
+
     const today =
-      new Date()
-      .toISOString()
-      .split("T")[0];
+      getToday();
 
     const ref =
       doc(
@@ -1176,7 +1323,7 @@ async function(userId){
         ...snap.data(),
 
         checkOutTime:
-          new Date().toISOString(),
+          serverTimestamp(),
 
         overridden:true
       }
@@ -1189,6 +1336,8 @@ async function(userId){
   } catch(error){
 
     console.error(error);
+
+    button.disabled = false;
 
     showToast(
       error.message,
@@ -1326,25 +1475,32 @@ setInterval(
   1000
 );
 
+// ======================================
+// PWA SERVICE WORKER
+// ======================================
 
 if("serviceWorker" in navigator){
 
-  window.addEventListener("load", ()=>{
+  window.addEventListener(
+    "load",
+    ()=>{
 
-    navigator.serviceWorker.register("./sw.js")
-    .then(()=>{
+      navigator
+      .serviceWorker
+      .register("./sw.js")
+      .then(()=>{
 
-      console.log(
-        "Service Worker Registered"
-      );
+        console.log(
+          "Service Worker Registered"
+        );
 
-    });
+      });
 
-  });
+    }
+  );
 
 }
 
 </script>
-
 </body>
 </html>
