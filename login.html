@@ -9,6 +9,16 @@
 
 <title>Attendance Login</title>
 
+<link
+  rel="manifest"
+  href="./manifest.json"
+/>
+
+<meta
+  name="theme-color"
+  content="#020617"
+/>
+
 <style>
 
 *{
@@ -318,6 +328,23 @@ loginBtn.addEventListener(
 
   }
 );
+
+if("serviceWorker" in navigator){
+
+  window.addEventListener("load", ()=>{
+
+    navigator.serviceWorker.register("./sw.js")
+    .then(()=>{
+
+      console.log(
+        "Service Worker Registered"
+      );
+
+    });
+
+  });
+
+}
 
 </script>
 
