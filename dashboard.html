@@ -340,7 +340,7 @@ button:disabled{
     <div class="info">
       Office Location:
       Plot 641, AB Close, 1st Avenue,
-      Gwarinpa, Abuja.
+      Gwarinpa, FCT Abuja.
     </div>
 
   </div>
@@ -394,7 +394,7 @@ button:disabled{
       class="message"
       id="message"
     >
-      System ready.
+      System is ready.
     </div>
 
   </div>
@@ -490,7 +490,8 @@ function showMessage(text){
 
 protectPage(null, async (user, userData)=>{
 
-  welcomeText.innerText = user.email;
+welcomeText.innerText =
+  `${userData.name} • ${userData.department}`;
 
   // CAMERA
 
