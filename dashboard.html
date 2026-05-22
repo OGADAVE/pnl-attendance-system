@@ -2,826 +2,1225 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"/>
-
-<title>Staff Dashboard</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PEAKNOVA — Attendance</title>
+<link rel="manifest" href="./manifest.json" />
+<meta name="theme-color" content="#030712" />
 <link
-  rel="manifest"
-  href="./manifest.json"
-/>
-
-<meta
-  name="theme-color"
-  content="#020617"
-/>
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap"
   rel="stylesheet"
 />
 
 <style>
 
-:root{
-  --bg:#020617;
-  --card:#0f172a;
-  --card-2:#1e293b;
-  --border:#334155;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --green:#22c55e;
-  --blue:#3b82f6;
-  --red:#ef4444;
-  --cyan:#06b6d4;
-  --yellow:#facc15;
+/* ══════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════ */
+
+:root {
+  --bg:        #030712;
+  --surface:   #0c1322;
+  --panel:     #111827;
+  --border:    #1f2d45;
+  --border-hi: #2d4261;
+  --text:      #e2e8f0;
+  --muted:     #64748b;
+  --dim:       #374151;
+
+  --green:     #22c55e;
+  --green-dim: #166534;
+  --blue:      #38bdf8;
+  --blue-dim:  #0c4a6e;
+  --red:       #f87171;
+  --red-dim:   #7f1d1d;
+  --amber:     #fbbf24;
+  --amber-dim: #78350f;
+
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Outfit', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-  font-family:'Inter',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.container{
-  width:100%;
-  max-width:700px;
-  margin:auto;
-  padding:20px;
+/* ── Animated background grid ───────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34,197,94,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,197,94,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:20px;
-  flex-wrap:wrap;
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.brand{
-  display:flex;
-  align-items:center;
-  gap:15px;
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
 }
 
-.logo{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid white;
-  background:white;
+/* ══════════════════════════════════════════
+   PAGE-LOAD ANIMATIONS
+══════════════════════════════════════════ */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.brand h1{
-  font-size:22px;
-  font-weight:700;
+@keyframes scanline {
+  0%   { top: 0%; }
+  100% { top: 100%; }
 }
 
-.brand p{
-  margin-top:4px;
-  font-size:14px;
-  color:var(--muted);
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .3; }
 }
 
-.live-box{
-  text-align:right;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.live-box h2{
-  font-size:36px;
-  color:var(--green);
-  letter-spacing:1px;
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.live-box p{
-  margin-top:5px;
-  font-size:14px;
-  color:var(--muted);
+.anim-1 { animation: fadeUp .5s ease both; }
+.anim-2 { animation: fadeUp .5s .1s ease both; }
+.anim-3 { animation: fadeUp .5s .2s ease both; }
+.anim-4 { animation: fadeUp .5s .3s ease both; }
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.card{
-  background:var(--card-2);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:20px;
-  margin-top:20px;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.card h3{
-  margin-bottom:15px;
-  font-size:18px;
+.logo-wrap {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.status-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
+.logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 2px solid var(--border-hi);
+  display: block;
 }
 
-.status-item{
-  background:var(--card);
-  padding:15px;
-  border-radius:12px;
+.logo-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 18px;
+  border: 1.5px solid rgba(34,197,94,.25);
 }
 
-.status-item span{
-  display:block;
-  margin-top:8px;
-  font-weight:600;
+.brand-text h1 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  line-height: 1.2;
 }
 
-.online{
-  color:var(--green);
+.brand-text p {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: .5px;
 }
 
-.offline{
-  color:var(--red);
+/* ── Clock ──────────────────────────────── */
+
+.clock-block {
+  text-align: right;
 }
 
-video{
-  width:100%;
-  margin-top:15px;
-  border-radius:16px;
-  background:black;
-  aspect-ratio:16/9;
-  object-fit:cover;
-  border:1px solid var(--border);
+.clock-display {
+  font-family: var(--font-mono);
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--green);
+  letter-spacing: 2px;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(34,197,94,.3);
 }
 
-.button-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:18px;
+.clock-date {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: .4px;
 }
 
-button{
-  border:none;
-  border-radius:12px;
-  padding:15px;
-  font-size:15px;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.2s ease;
-  color:white;
+/* ══════════════════════════════════════════
+   ATTENDANCE SUMMARY BANNER
+══════════════════════════════════════════ */
+
+.summary-banner {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-button:hover{
-  transform:translateY(-1px);
-  opacity:0.95;
+.summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-button:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
+.summary-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
-.bio{
-  background:var(--cyan);
+.summary-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
 }
 
-.checkin{
-  background:var(--green);
+.summary-dept {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
-.checkout{
-  background:var(--blue);
+.summary-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.logout{
-  background:var(--red);
-  margin-top:15px;
-  width:100%;
+.att-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid transparent;
 }
 
-.message{
-  margin-top:18px;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:15px;
-  min-height:55px;
-  line-height:1.6;
-  font-size:14px;
+.att-pill.not-in   { background: rgba(100,116,139,.15); border-color: var(--dim);      color: var(--muted); }
+.att-pill.checked-in  { background: rgba(34,197,94,.12);  border-color: var(--green-dim); color: var(--green); }
+.att-pill.checked-out { background: rgba(56,189,248,.12);  border-color: var(--blue-dim);  color: var(--blue); }
+
+.att-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 1.6s ease-in-out infinite;
 }
 
-.info{
-  margin-top:15px;
-  background:var(--card);
-  border-radius:12px;
-  padding:15px;
-  font-size:14px;
-  color:var(--muted);
-  line-height:1.7;
+.att-times {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
 }
 
-.loading{
-  opacity:0.7;
-  pointer-events:none;
+.att-times span { display: flex; align-items: center; gap: 4px; }
+.att-times b    { color: var(--text); }
+
+/* ══════════════════════════════════════════
+   STATUS GRID
+══════════════════════════════════════════ */
+
+.section {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
 }
 
-.footer{
-  text-align:center;
-  margin-top:25px;
-  color:var(--muted);
-  font-size:13px;
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
 }
 
-@media(max-width:700px){
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
 
-  .container{
-    padding:15px;
-  }
+.status-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: border-color .2s;
+}
 
-  .header{
-    flex-direction:column;
-  }
+.status-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
 
-  .live-box{
-    text-align:left;
-  }
+.status-value {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
 
-  .live-box h2{
-    font-size:30px;
-  }
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
-  .status-grid{
-    grid-template-columns:1fr;
-  }
+.dot.green  { background: var(--green);  box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s ease-in-out infinite; }
+.dot.red    { background: var(--red); }
+.dot.amber  { background: var(--amber);  animation: pulse-dot 1.4s ease-in-out infinite; }
+.dot.dim    { background: var(--dim); }
 
-  .button-grid{
-    grid-template-columns:1fr;
-  }
+.text-green { color: var(--green); }
+.text-red   { color: var(--red); }
+.text-amber { color: var(--amber); }
+.text-muted { color: var(--muted); }
 
+.office-info {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  line-height: 1.7;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* ══════════════════════════════════════════
+   CAMERA / IDENTITY SECTION
+══════════════════════════════════════════ */
+
+.camera-section { padding-bottom: 20px; }
+
+/* viewfinder wrapper */
+.viewfinder {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16/9;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-hi);
+}
+
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* corner brackets */
+.vf-corner {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-color: var(--green);
+  border-style: solid;
+  opacity: .7;
+  z-index: 2;
+}
+
+.vf-corner.tl { top: 10px;    left: 10px;   border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.vf-corner.tr { top: 10px;    right: 10px;  border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.vf-corner.bl { bottom: 10px; left: 10px;   border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.vf-corner.br { bottom: 10px; right: 10px;  border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+/* scan line */
+.vf-scan {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  opacity: .5;
+  animation: scanline 2.5s linear infinite;
+  z-index: 2;
+}
+
+/* camera label */
+.vf-label {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--green);
+  opacity: .6;
+  letter-spacing: 2px;
+  z-index: 2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* camera unavailable overlay */
+.vf-unavailable {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(0,0,0,.7);
+  z-index: 3;
+}
+
+.vf-unavailable.show { display: flex; }
+
+.vf-unavailable svg { color: var(--red); opacity: .7; }
+.vf-unavailable p   { font-size: 13px; color: var(--muted); }
+
+/* ── Action Buttons ─────────────────────── */
+
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.action-btn {
+  position: relative;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0;
+  cursor: pointer;
+  color: white;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform .15s, opacity .15s, box-shadow .2s;
+  overflow: hidden;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.action-btn:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* shimmer on hover */
+.action-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.action-btn:hover:not(:disabled)::after { opacity: 1; }
+
+.btn-bio      { background: linear-gradient(135deg, #0f766e, #059669); }
+.btn-checkin  { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.btn-checkout { background: linear-gradient(135deg, #0369a1, #38bdf8); }
+.btn-logout   {
+  grid-column: 1 / -1;
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--muted);
+  height: 46px;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.btn-logout:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(248,113,113,.06);
+  box-shadow: none;
+}
+
+.btn-icon { font-size: 17px; line-height: 1; }
+
+/* spinner inside button */
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+
+.action-btn.loading .btn-icon,
+.action-btn.loading .btn-label { display: none; }
+.action-btn.loading .btn-spinner { display: block; }
+
+/* ══════════════════════════════════════════
+   MESSAGE / FEEDBACK
+══════════════════════════════════════════ */
+
+.message-box {
+  margin-top: 14px;
+  border-radius: var(--radius-md);
+  padding: 13px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color .25s, color .25s;
+}
+
+.message-box.success { border-color: var(--green-dim); color: var(--green); }
+.message-box.error   { border-color: var(--red-dim);   color: var(--red);   }
+.message-box.info    { border-color: var(--blue-dim);  color: var(--blue);  }
+.message-box.warning { border-color: var(--amber-dim); color: var(--amber); }
+
+.msg-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  left: 20px;
+  max-width: 420px;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-md);
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform .3s ease, opacity .3s ease;
+  pointer-events: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--blue); }
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+
+.footer {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--dim);
+  letter-spacing: .5px;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+
+@media (max-width: 560px) {
+  .header          { flex-direction: column; gap: 12px; }
+  .clock-block     { text-align: left; }
+  .clock-display   { font-size: 30px; }
+  .status-grid     { grid-template-columns: 1fr 1fr; }
+  .att-times       { display: none; }
+  .summary-banner  { padding: 12px 14px; }
+}
+
+@media (max-width: 360px) {
+  .status-grid     { grid-template-columns: 1fr; }
+  .action-grid     { grid-template-columns: 1fr; }
+  .btn-logout      { grid-column: auto; }
 }
 
 </style>
 </head>
-
 <body>
 
 <div class="container">
 
-  <!-- HEADER -->
-
-  <div class="header">
+  <!-- ══ HEADER ══════════════════════════ -->
+  <div class="header anim-1">
 
     <div class="brand">
-
-      <img
-        src="./images/pln-logo.jpg"
-        alt="Logo"
-        class="logo"
-      />
-
-      <div>
-        <h1>PEAKNOVA LIMITED</h1>
-        <p>Smart Attendance System</p>
+      <div class="logo-wrap">
+        <img src="./images/pln-logo.jpg" alt="PEAKNOVA Logo" class="logo" />
+        <div class="logo-ring"></div>
       </div>
-
+      <div class="brand-text">
+        <h1>PEAKNOVA LIMITED</h1>
+        <p>SMART ATTENDANCE SYSTEM</p>
+      </div>
     </div>
 
-    <div class="live-box">
-
-      <h2 id="liveClock">
-        00:00:00
-      </h2>
-
-      <p id="liveDate">
-        Loading...
-      </p>
-
+    <div class="clock-block">
+      <div class="clock-display" id="liveClock">00:00:00</div>
+      <div class="clock-date"    id="liveDate">Loading…</div>
     </div>
 
   </div>
 
-  <!-- STATUS -->
+  <!-- ══ USER SUMMARY BANNER ═════════════ -->
+  <div class="summary-banner anim-2" id="summaryBanner">
+    <div class="summary-left">
+      <div class="summary-avatar">👤</div>
+      <div>
+        <div class="summary-name" id="summaryName">Loading…</div>
+        <div class="summary-dept" id="summaryDept"></div>
+      </div>
+    </div>
+    <div class="summary-right">
+      <div class="att-pill not-in" id="statusPill">
+        <span class="att-dot"></span>
+        <span id="statusPillText">Not Checked In</span>
+      </div>
+      <div class="att-times" id="attTimes" style="display:none">
+        <span>IN&nbsp;<b id="timeIn">—</b></span>
+        <span>OUT&nbsp;<b id="timeOut">—</b></span>
+      </div>
+    </div>
+  </div>
 
-  <div class="card">
-
-    <h3>System Status</h3>
-
+  <!-- ══ SYSTEM STATUS ════════════════════ -->
+  <div class="section anim-2">
+    <div class="section-title">System Status</div>
     <div class="status-grid">
 
       <div class="status-item">
-        Internet
-        <span
-          id="internetStatus"
-          class="online"
-        >
-          Online
+        <span class="status-label">Internet</span>
+        <span class="status-value">
+          <span class="dot dim" id="internetDot"></span>
+          <span id="internetStatus" class="text-muted">Checking…</span>
         </span>
       </div>
 
       <div class="status-item">
-        GPS
-        <span id="gpsStatus">
-          Checking...
+        <span class="status-label">GPS</span>
+        <span class="status-value">
+          <span class="dot dim" id="gpsDot"></span>
+          <span id="gpsStatus" class="text-muted">Checking…</span>
         </span>
       </div>
 
       <div class="status-item">
-        Camera
-        <span id="cameraStatus">
-          Initializing...
+        <span class="status-label">Camera</span>
+        <span class="status-value">
+          <span class="dot dim" id="cameraDot"></span>
+          <span id="cameraStatus" class="text-muted">Initializing…</span>
         </span>
       </div>
 
       <div class="status-item">
-        User
-        <span id="welcomeText">
-          Loading...
+        <span class="status-label">Biometric</span>
+        <span class="status-value">
+          <span class="dot dim" id="bioDot"></span>
+          <span id="bioStatus" class="text-muted">Checking…</span>
         </span>
       </div>
 
     </div>
 
-    <div class="info">
-      Office Location:
-      Plot 641, AB Close, 1st Avenue,
-      Gwarinpa, FCT Abuja.
+    <div class="office-info">
+      <span>📍</span>
+      <div>Plot 641, AB Close, 1st Avenue,<br>Gwarinpa, FCT Abuja.</div>
+    </div>
+  </div>
+
+  <!-- ══ IDENTITY VERIFICATION ══════════ -->
+  <div class="section camera-section anim-3">
+    <div class="section-title">Identity Verification</div>
+
+    <!-- Viewfinder -->
+    <div class="viewfinder">
+      <video id="video" autoplay muted playsinline></video>
+      <div class="vf-corner tl"></div>
+      <div class="vf-corner tr"></div>
+      <div class="vf-corner bl"></div>
+      <div class="vf-corner br"></div>
+      <div class="vf-scan"></div>
+      <div class="vf-label">LIVE FEED</div>
+      <div class="vf-unavailable" id="cameraUnavailable">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72M19.5 19.5L4.5 4.5M9 9v.253a2.25 2.25 0 001.883 2.217l2.867.574a2.25 2.25 0 011.884 2.21V19.5m0 0H7.5a2.25 2.25 0 01-2.25-2.25v-5.25m0 0V6.75A2.25 2.25 0 017.5 4.5h1.5" />
+        </svg>
+        <p>Camera unavailable</p>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-grid">
+
+      <button class="action-btn btn-bio" id="bioBtn">
+        <span class="btn-icon">🔐</span>
+        <span class="btn-label">Verify Identity</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-checkin" id="checkinBtn" disabled>
+        <span class="btn-icon">✅</span>
+        <span class="btn-label">Check In</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-checkout" id="checkoutBtn" disabled>
+        <span class="btn-icon">🚪</span>
+        <span class="btn-label">Check Out</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-logout" id="logoutBtn">
+        <span class="btn-icon">↩</span>
+        <span class="btn-label">Logout</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+    </div>
+
+    <!-- Feedback message -->
+    <div class="message-box" id="message">
+      <span class="msg-icon">ℹ️</span>
+      <span id="messageText">System is ready. Verify your identity to proceed.</span>
     </div>
 
   </div>
 
-  <!-- CAMERA -->
-
-  <div class="card">
-
-    <h3>Identity Verification</h3>
-
-    <video
-      id="video"
-      autoplay
-      muted
-      playsinline
-    ></video>
-
-    <div class="button-grid">
-
-      <button
-        class="bio"
-        id="bioBtn"
-      >
-        🔐 Verify Identity
-      </button>
-
-      <button
-        class="checkin"
-        id="checkinBtn"
-      >
-        Check In
-      </button>
-
-      <button
-        class="checkout"
-        id="checkoutBtn"
-      >
-        Check Out
-      </button>
-
-      <button
-        class="logout"
-        id="logoutBtn"
-      >
-        Logout
-      </button>
-
-    </div>
-
-    <div
-      class="message"
-      id="message"
-    >
-      System is ready.
-    </div>
-
-  </div>
-
-  <div class="footer">
-    PEAKNOVA LIMITED • Smart Attendance System
+  <div class="footer anim-4">
+    PEAKNOVA LIMITED &nbsp;•&nbsp; SMART ATTENDANCE SYSTEM &nbsp;•&nbsp; v2.0
   </div>
 
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toastIcon">✓</span>
+  <span id="toastText"></span>
+</div>
+
+
 <script type="module">
 
-import { auth }
-from "./js/firebase.js";
+import { auth, db }                  from "./js/firebase.js";
+import { protectPage, logoutUser }   from "./js/auth.js";
+import {
+  startCamera, checkIn, checkOut,
+  verifyBiometric, syncOfflineAttendance
+} from "./js/app.js";
 
 import {
-  protectPage,
-  logoutUser
-}
-from "./js/auth.js";
+  collection, doc, onSnapshot, query, where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  startCamera,
-  checkIn,
-  checkOut,
-  verifyBiometric,
-  syncOfflineAttendance
-}
-from "./js/app.js";
 
-// ======================================
-// HTTPS CHECK
-// ======================================
+// ══════════════════════════════════════
+// HTTPS GUARD
+// ══════════════════════════════════════
 
-if(
-  location.protocol !== "https:" &&
-  location.hostname !== "localhost"
-){
-
-  alert(
-    "This attendance system requires your camera, location and biometric support."
-  );
-
+if (location.protocol !== "https:" && location.hostname !== "localhost") {
+  showToast("⚠️ HTTPS is required for camera and biometric features.", "error");
 }
 
-// ======================================
-// ELEMENTS
-// ======================================
 
-const video =
-  document.getElementById("video");
+// ══════════════════════════════════════
+// DOM REFS
+// ══════════════════════════════════════
 
-const message =
-  document.getElementById("message");
+const $ = id => document.getElementById(id);
 
-const welcomeText =
-  document.getElementById("welcomeText");
+const video              = $("video");
+const messageEl          = $("message");
+const messageText        = $("messageText");
+const summaryName        = $("summaryName");
+const summaryDept        = $("summaryDept");
+const statusPill         = $("statusPill");
+const statusPillText     = $("statusPillText");
+const attTimes           = $("attTimes");
+const timeIn             = $("timeIn");
+const timeOut            = $("timeOut");
+const checkinBtn         = $("checkinBtn");
+const checkoutBtn        = $("checkoutBtn");
+const bioBtn             = $("bioBtn");
+const logoutBtn          = $("logoutBtn");
+const cameraUnavailable  = $("cameraUnavailable");
 
-const internetStatus =
-  document.getElementById("internetStatus");
 
-const gpsStatus =
-  document.getElementById("gpsStatus");
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
 
-const cameraStatus =
-  document.getElementById("cameraStatus");
+let biometricVerified = false;
+let currentUser       = null;
+let todayRecord       = null;   // live from Firestore
 
-const checkinBtn =
-  document.getElementById("checkinBtn");
 
-const checkoutBtn =
-  document.getElementById("checkoutBtn");
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
 
-const bioBtn =
-  document.getElementById("bioBtn");
-
-const logoutBtn =
-  document.getElementById("logoutBtn");
-
-// ======================================
-// MESSAGE
-// ======================================
-
-function showMessage(text){
-
-  message.innerText = text;
-
+function getToday() {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
-// ======================================
-// PAGE PROTECTION
-// ======================================
+function str(v) { return (v === null || v === undefined) ? "" : String(v).trim(); }
 
-protectPage(null, async (user, userData)=>{
-
-welcomeText.innerText =
-  `${userData.name} • ${userData.department}`;
-
-  // CAMERA
-
+function formatTime(ts) {
+  if (!ts || ts._methodName === "serverTimestamp") return "—";
   try {
+    const d = typeof ts.toDate === "function" ? ts.toDate() : new Date(ts);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  } catch { return "—"; }
+}
 
-    await startCamera(video);
 
-    cameraStatus.innerText =
-      "Camera Ready";
+// ══════════════════════════════════════
+// STATUS DOT UPDATER
+// ══════════════════════════════════════
 
-  } catch(err){
+function setDot(dotId, textId, state, label) {
+  const dot  = $(dotId);
+  const text = $(textId);
+  dot.className  = `dot ${state}`;
+  text.className = `text-${state === "dim" ? "muted" : state}`;
+  text.textContent = label;
+}
 
-    console.error(err);
 
-    cameraStatus.innerText =
-      "Camera Unavailable";
+// ══════════════════════════════════════
+// MESSAGE BOX
+// ══════════════════════════════════════
 
-    showMessage(
-      "Camera access denied or unavailable."
-    );
+const MSG_ICONS = {
+  success: "✅",
+  error:   "❌",
+  info:    "ℹ️",
+  warning: "⚠️",
+};
 
+function showMessage(text, type = "info") {
+  messageEl.className   = `message-box ${type}`;
+  $("msg-icon") && ($("msg-icon").textContent = MSG_ICONS[type] || "ℹ️");
+  messageEl.querySelector(".msg-icon").textContent = MSG_ICONS[type] || "ℹ️";
+  messageText.textContent = text;
+}
+
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+
+let _toastTimer = null;
+function showToast(text, type = "success") {
+  const toast   = $("toast");
+  $("toastText").textContent = text;
+  $("toastIcon").textContent = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
+  toast.className = `toast ${type}`;
+  void toast.offsetHeight;
+  toast.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => toast.classList.remove("show"), 3800);
+}
+
+
+// ══════════════════════════════════════
+// BUTTON STATE ENGINE
+// ══════════════════════════════════════
+
+/**
+ * Reads todayRecord and biometricVerified,
+ * then enables/disables buttons appropriately.
+ *
+ * Rules:
+ *  - Check In  → enabled only if biometric verified AND not yet checked in
+ *  - Check Out → enabled only if checked in AND not yet checked out
+ *  - Bio       → always enabled unless already processing
+ */
+function syncButtonStates() {
+  const hasIn  = !!(todayRecord?.checkInTime  && todayRecord.checkInTime._methodName  !== "serverTimestamp");
+  const hasOut = !!(todayRecord?.checkOutTime && todayRecord.checkOutTime._methodName !== "serverTimestamp");
+
+  checkinBtn.disabled  = !biometricVerified || hasIn;
+  checkoutBtn.disabled = !hasIn || hasOut;
+
+  // Update pill & times
+  if (hasOut) {
+    statusPill.className     = "att-pill checked-out";
+    statusPillText.textContent = "Checked Out";
+  } else if (hasIn) {
+    statusPill.className     = "att-pill checked-in";
+    statusPillText.textContent = "Checked In";
+  } else {
+    statusPill.className     = "att-pill not-in";
+    statusPillText.textContent = "Not Checked In";
   }
 
+  if (hasIn) {
+    attTimes.style.display = "flex";
+    timeIn.textContent  = formatTime(todayRecord.checkInTime);
+    timeOut.textContent = hasOut ? formatTime(todayRecord.checkOutTime) : "—";
+  } else {
+    attTimes.style.display = "none";
+  }
+}
+
+
+// ══════════════════════════════════════
+// LIVE ATTENDANCE WATCHER
+// ══════════════════════════════════════
+
+function watchTodayAttendance(userId) {
+  const today  = getToday();
+  const docRef = doc(db, "attendance", `${userId}_${today}`);
+
+  onSnapshot(docRef, snap => {
+    todayRecord = snap.exists() ? snap.data() : null;
+    syncButtonStates();
+  }, err => {
+    console.warn("Attendance watcher error:", err);
+  });
+}
+
+
+// ══════════════════════════════════════
+// PAGE PROTECTION + INIT
+// ══════════════════════════════════════
+
+protectPage(null, async (user, userData) => {
+  currentUser = { ...userData, uid: user.uid };
+
+  const name = str(userData.name);
+  const dept = str(userData.department);
+
+  summaryName.textContent = name || user.email || "Staff";
+  summaryDept.textContent = dept || "";
+
+  const userId = str(userData.userId) || user.uid;
+
+  // Start watching today's attendance in real-time
+  watchTodayAttendance(userId);
+
+  // Camera
+  try {
+    await startCamera(video);
+    setDot("cameraDot", "cameraStatus", "green", "Ready");
+  } catch {
+    setDot("cameraDot", "cameraStatus", "red", "Unavailable");
+    cameraUnavailable.classList.add("show");
+    showMessage("Camera access denied. Allow camera to use this system.", "error");
+  }
+
+  // Biometric support check (passive — no prompt)
+  if (window.PublicKeyCredential) {
+    setDot("bioDot", "bioStatus", "green", "Supported");
+  } else {
+    setDot("bioDot", "bioStatus", "amber", "Not Supported");
+  }
+
+  // Offline sync on load
+  syncOfflineAttendance();
 });
 
-// ======================================
+
+// ══════════════════════════════════════
 // INTERNET STATUS
-// ======================================
+// ══════════════════════════════════════
 
-function updateInternetStatus(){
-
-  if(navigator.onLine){
-
-    internetStatus.innerText =
-      "Online";
-
-    internetStatus.className =
-      "online";
-
+function updateInternetStatus() {
+  if (navigator.onLine) {
+    setDot("internetDot", "internetStatus", "green", "Online");
   } else {
-
-    internetStatus.innerText =
-      "Offline";
-
-    internetStatus.className =
-      "offline";
-
+    setDot("internetDot", "internetStatus", "red", "Offline");
   }
-
 }
 
 updateInternetStatus();
 
-window.addEventListener(
-  "online",
-  ()=>{
+window.addEventListener("online", () => {
+  updateInternetStatus();
+  syncOfflineAttendance();
+  showMessage("Connection restored. Offline records synced.", "success");
+  showToast("Back online — attendance synced", "success");
+});
 
-    updateInternetStatus();
+window.addEventListener("offline", () => {
+  updateInternetStatus();
+  showMessage("You are offline. Check-ins will be saved locally.", "warning");
+  showToast("Offline mode active", "info");
+});
 
-    syncOfflineAttendance();
 
-    showMessage(
-      "Internet restored. Offline attendance synced."
-    );
-
-  }
-);
-
-window.addEventListener(
-  "offline",
-  ()=>{
-
-    updateInternetStatus();
-
-    showMessage(
-      "Offline mode enabled."
-    );
-
-  }
-);
-
-// ======================================
-// GPS
-// ======================================
+// ══════════════════════════════════════
+// GPS CHECK
+// ══════════════════════════════════════
 
 navigator.geolocation.getCurrentPosition(
-
-  ()=>{
-
-    gpsStatus.innerText =
-      "Location Available";
-
-  },
-
-  ()=>{
-
-    gpsStatus.innerText =
-      "Location Denied";
-
-  },
-
-  {
-    enableHighAccuracy:true,
-    timeout:10000,
-    maximumAge:0
-  }
-
+  () => setDot("gpsDot", "gpsStatus", "green", "Available"),
+  () => setDot("gpsDot", "gpsStatus", "amber", "Denied"),
+  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
 );
 
-// ======================================
-// BIOMETRIC
-// ======================================
 
-bioBtn.addEventListener(
-  "click",
-  async ()=>{
+// ══════════════════════════════════════
+// BIOMETRIC VERIFY
+// ══════════════════════════════════════
 
-    try {
-
-      bioBtn.classList.add("loading");
-
-      if(!window.PublicKeyCredential){
-
-        throw new Error(
-          "Biometric authentication is not supported on this device."
-        );
-
-      }
-
-      const result =
-        await verifyBiometric();
-
-      showMessage(result.message);
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      bioBtn.classList.remove("loading");
-
+bioBtn.addEventListener("click", async () => {
+  setBtnLoading(bioBtn, true);
+  try {
+    if (!window.PublicKeyCredential) {
+      throw new Error("Biometric authentication is not supported on this device.");
     }
-
+    const result = await verifyBiometric();
+    biometricVerified = true;
+    syncButtonStates();
+    showMessage(result.message || "Identity verified. You may now check in.", "success");
+    showToast("Identity verified ✓", "success");
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message || "Biometric verification failed.", "error");
+    showToast("Verification failed", "error");
+  } finally {
+    setBtnLoading(bioBtn, false);
   }
-);
+});
 
-// ======================================
+
+// ══════════════════════════════════════
 // CHECK IN
-// ======================================
+// ══════════════════════════════════════
 
-checkinBtn.addEventListener(
-  "click",
-  async ()=>{
-
-    try {
-
-      checkinBtn.classList.add("loading");
-
-      const result =
-        await checkIn({
-
-          videoElement: video,
-
-          method: navigator.onLine
-            ? "mobile"
-            : "offline"
-
-        });
-
-      showMessage(result.message);
-
-      if(result.success){
-
-        checkinBtn.disabled = true;
-
-      }
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      checkinBtn.classList.remove("loading");
-
+checkinBtn.addEventListener("click", async () => {
+  setBtnLoading(checkinBtn, true);
+  try {
+    const result = await checkIn({
+      videoElement: video,
+      method: navigator.onLine ? "mobile" : "offline",
+    });
+    if (result.success) {
+      showMessage(result.message || "Checked in successfully!", "success");
+      showToast("Checked in ✓", "success");
+      // todayRecord will update via onSnapshot → syncButtonStates will run
+    } else {
+      showMessage(result.message || "Check-in failed.", "error");
+      showToast("Check-in failed", "error");
     }
-
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message || "An error occurred during check-in.", "error");
+    showToast(err.message || "Check-in error", "error");
+  } finally {
+    setBtnLoading(checkinBtn, false);
   }
-);
+});
 
-// ======================================
+
+// ══════════════════════════════════════
 // CHECK OUT
-// ======================================
+// ══════════════════════════════════════
 
-checkoutBtn.addEventListener(
-  "click",
-  async ()=>{
-
-    try {
-
-      checkoutBtn.classList.add("loading");
-
-      const result =
-        await checkOut();
-
-      showMessage(result.message);
-
-      if(result.success){
-
-        checkoutBtn.disabled = true;
-
-      }
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      checkoutBtn.classList.remove("loading");
-
+checkoutBtn.addEventListener("click", async () => {
+  setBtnLoading(checkoutBtn, true);
+  try {
+    const result = await checkOut();
+    if (result.success) {
+      showMessage(result.message || "Checked out successfully. Have a great day!", "success");
+      showToast("Checked out ✓", "success");
+    } else {
+      showMessage(result.message || "Check-out failed.", "error");
+      showToast("Check-out failed", "error");
     }
-
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message || "An error occurred during check-out.", "error");
+    showToast(err.message || "Check-out error", "error");
+  } finally {
+    setBtnLoading(checkoutBtn, false);
   }
-);
+});
 
-// ======================================
-// INITIAL OFFLINE SYNC
-// ======================================
 
-syncOfflineAttendance();
-
-// ======================================
+// ══════════════════════════════════════
 // LOGOUT
-// ======================================
+// ══════════════════════════════════════
 
-logoutBtn.addEventListener(
-  "click",
-  async ()=>{
-
+logoutBtn.addEventListener("click", async () => {
+  setBtnLoading(logoutBtn, true);
+  try {
     await logoutUser();
-
+  } catch {
+    setBtnLoading(logoutBtn, false);
   }
-);
+});
 
-// ======================================
+
+// ══════════════════════════════════════
+// BUTTON LOADING STATE
+// ══════════════════════════════════════
+
+function setBtnLoading(btn, state) {
+  if (state) {
+    btn.classList.add("loading");
+    btn.disabled = true;
+  } else {
+    btn.classList.remove("loading");
+    // Re-evaluate disabled state from button type
+    if (btn === bioBtn || btn === logoutBtn) {
+      btn.disabled = false;
+    } else {
+      // Let syncButtonStates() decide
+      syncButtonStates();
+    }
+  }
+}
+
+
+// ══════════════════════════════════════
 // LIVE CLOCK
-// ======================================
+// ══════════════════════════════════════
 
-const liveClock =
-  document.getElementById("liveClock");
-
-const liveDate =
-  document.getElementById("liveDate");
-
-function updateClock(){
-
+function updateClock() {
   const now = new Date();
-
-  const time =
-    now.toLocaleTimeString(
-      "en-US",
-      {
-        hour:"2-digit",
-        minute:"2-digit",
-        second:"2-digit"
-      }
-    );
-
-  const date =
-    now.toLocaleDateString(
-      "en-US",
-      {
-        weekday:"long",
-        year:"numeric",
-        month:"long",
-        day:"numeric"
-      }
-    );
-
-  liveClock.innerText =
-    time;
-
-  liveDate.innerText =
-    date;
-
+  $("liveClock").textContent = now.toLocaleTimeString("en-US", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  });
+  $("liveDate").textContent = now.toLocaleDateString("en-US", {
+    weekday: "short", year: "numeric", month: "short", day: "numeric",
+  }).toUpperCase();
 }
 
 updateClock();
-
-setInterval(
-  updateClock,
-  1000
-);
+setInterval(updateClock, 1000);
 
 
-if("serviceWorker" in navigator){
+// ══════════════════════════════════════
+// SERVICE WORKER (PWA)
+// ══════════════════════════════════════
 
-  window.addEventListener("load", ()=>{
-
-    navigator.serviceWorker.register("./sw.js")
-    .then(()=>{
-
-      console.log(
-        "Service Worker Registered"
-      );
-
-    });
-
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      await navigator.serviceWorker.register("./sw.js");
+    } catch (err) {
+      console.warn("SW registration failed:", err);
+    }
   });
-
 }
 
 </script>
-
 </body>
 </html>

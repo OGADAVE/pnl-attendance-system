@@ -2,1165 +2,1648 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
-/>
-
-<title>Office Kiosk</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PEAKNOVA — Office Kiosk</title>
+<link rel="manifest" href="./manifest.json" />
+<meta name="theme-color" content="#09090f" />
 <link
-  rel="manifest"
-  href="./manifest.json"
-/>
-
-<meta
-  name="theme-color"
-  content="#020617"
-/>
-
-<link
-  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Mono:wght@400;500&family=Barlow:wght@400;500;600&display=swap"
   rel="stylesheet"
 />
 
 <style>
 
-:root{
-  --bg:#020617;
-  --card:#1e293b;
-  --card-dark:#0f172a;
-  --border:#334155;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --green:#22c55e;
-  --blue:#3b82f6;
-  --cyan:#06b6d4;
-  --purple:#6366f1;
-  --red:#ef4444;
+/* ════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════ */
+
+:root {
+  --bg:         #09090f;
+  --surface:    #0e1018;
+  --panel:      #13161f;
+  --panel-hi:   #181c28;
+  --border:     #1e2433;
+  --border-hi:  #2a3347;
+
+  --text:       #eef0f5;
+  --muted:      #5a6278;
+  --dim:        #2d3347;
+
+  --amber:      #f59e0b;
+  --amber-glow: rgba(245,158,11,.15);
+  --amber-dim:  #78350f;
+  --green:      #22c55e;
+  --green-glow: rgba(34,197,94,.12);
+  --green-dim:  #14532d;
+  --blue:       #38bdf8;
+  --blue-dim:   #0c4a6e;
+  --red:        #f87171;
+  --red-dim:    #7f1d1d;
+
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+
+  --step-size: 32px;
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+/* ════════════════════════════════════════
+   RESET
+════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Inter',sans-serif;
-  min-height:100vh;
+/* Subtle amber glow from top */
+body::before {
+  content: '';
+  position: fixed;
+  top: -120px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 300px;
+  background: radial-gradient(ellipse, rgba(245,158,11,.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.container{
-  width:100%;
-  max-width:700px;
-  margin:auto;
-  padding:20px;
+/* Dot grid texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:20px;
-  flex-wrap:wrap;
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
 }
 
-.brand{
-  display:flex;
-  align-items:center;
-  gap:15px;
+/* ════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════ */
+
+@keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes scanline { 0% { top:0; } 100% { top:100%; } }
+@keyframes pulse    { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes pop      { 0%{transform:scale(.94);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+@keyframes countdown-ring {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 220; }
 }
 
-.logo{
-  width:65px;
-  height:65px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid white;
-  background:white;
+.anim-1 { animation: fadeUp .45s ease both; }
+.anim-2 { animation: fadeUp .45s .08s ease both; }
+.anim-3 { animation: fadeUp .45s .16s ease both; }
+.anim-4 { animation: fadeUp .45s .24s ease both; }
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.brand h1{
-  font-size:24px;
-  font-weight:700;
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.logo-wrap { position: relative; flex-shrink: 0; }
+
+.logo {
+  width: 58px; height: 58px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 2px solid var(--border-hi);
+  display: block;
 }
 
-.brand p{
-  margin-top:4px;
-  color:var(--muted);
-  font-size:14px;
+.logo-accent {
+  position: absolute;
+  inset: -3px;
+  border-radius: 17px;
+  border: 1.5px solid var(--amber);
+  opacity: .25;
 }
 
-.live-time{
-  text-align:right;
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  line-height: 1.1;
 }
 
-.live-time h2{
-  font-size:38px;
-  color:var(--green);
+.brand-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
-.live-time p{
-  margin-top:6px;
-  color:var(--muted);
-  font-size:14px;
+/* ── Clock ─────────────────────────────── */
+
+.clock-wrap { text-align: right; }
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 500;
+  color: var(--amber);
+  letter-spacing: 2px;
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(245,158,11,.35);
 }
 
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:20px;
-  margin-top:20px;
+.clock-date {
+  margin-top: 5px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: .5px;
+  text-transform: uppercase;
 }
 
-.card h3{
-  margin-bottom:15px;
-  font-size:18px;
+/* ════════════════════════════════════════
+   STATUS BAR
+════════════════════════════════════════ */
+
+.status-bar {
+  margin-top: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.status-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:15px;
+.status-items { display: flex; gap: 20px; flex-wrap: wrap; }
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
 }
 
-.status-item{
-  background:var(--card-dark);
-  border-radius:12px;
-  padding:15px;
+.status-item b { font-weight: 500; }
+
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.status-item span{
-  display:block;
-  margin-top:8px;
-  font-weight:600;
+.dot.green  { background: var(--green);  box-shadow: 0 0 5px var(--green); animation: pulse 2s ease-in-out infinite; }
+.dot.amber  { background: var(--amber);  box-shadow: 0 0 5px var(--amber); animation: pulse 1.5s ease-in-out infinite; }
+.dot.red    { background: var(--red); }
+.dot.dim    { background: var(--dim); }
+
+.text-green { color: var(--green); }
+.text-amber { color: var(--amber); }
+.text-red   { color: var(--red);   }
+.text-muted { color: var(--muted); }
+
+/* Time window badge */
+.time-window {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-hi);
+  color: var(--muted);
+  white-space: nowrap;
 }
 
-.online{
-  color:var(--green);
+.time-window.open-in   { border-color: var(--green-dim); color: var(--green);  background: var(--green-glow); }
+.time-window.open-late { border-color: var(--amber-dim); color: var(--amber);  background: var(--amber-glow); }
+.time-window.open-out  { border-color: var(--blue-dim);  color: var(--blue);   background: rgba(56,189,248,.08); }
+.time-window.closed    { border-color: var(--red-dim);   color: var(--red);    background: rgba(248,113,113,.06); }
+
+/* ════════════════════════════════════════
+   STEP PROGRESS
+════════════════════════════════════════ */
+
+.steps {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
-.offline{
-  color:var(--red);
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  position: relative;
 }
 
-input{
-  width:100%;
-  padding:15px;
-  border:none;
-  border-radius:12px;
-  background:var(--card-dark);
-  color:white;
-  font-size:15px;
-  outline:none;
-  border:1px solid transparent;
+.step-num {
+  width: var(--step-size);
+  height: var(--step-size);
+  border-radius: 50%;
+  border: 2px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--surface);
+  flex-shrink: 0;
+  transition: border-color .3s, color .3s, background .3s, box-shadow .3s;
 }
 
-input:focus{
-  border-color:var(--blue);
+.step-label {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  transition: color .3s;
 }
 
-video{
-  width:100%;
-  margin-top:15px;
-  border-radius:16px;
-  background:black;
-  aspect-ratio:16/9;
-  object-fit:cover;
-  border:1px solid var(--border);
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin: 0 8px;
+  transition: background .3s;
 }
 
-button{
-  width:100%;
-  border:none;
-  border-radius:12px;
-  padding:15px;
-  font-size:15px;
-  font-weight:600;
-  color:white;
-  cursor:pointer;
-  transition:0.2s ease;
-  margin-top:12px;
+/* Active */
+.step.active .step-num {
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: 0 0 12px rgba(245,158,11,.3);
+}
+.step.active .step-label { color: var(--amber); }
+
+/* Done */
+.step.done .step-num {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-dim);
+  box-shadow: 0 0 8px rgba(34,197,94,.2);
+}
+.step.done .step-label { color: var(--green); }
+.step.done + .step-line { background: var(--green-dim); }
+
+/* ════════════════════════════════════════
+   CARDS / SECTIONS
+════════════════════════════════════════ */
+
+.section {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
 }
 
-button:hover{
-  opacity:0.95;
-  transform:translateY(-1px);
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
 }
 
-button:disabled{
-  opacity:0.5;
-  cursor:not-allowed;
+/* ── Staff ID Input ───────────────────── */
+
+.input-wrap {
+  position: relative;
 }
 
-.lookup{
-  background:var(--purple);
+.input-wrap svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
 }
 
-.bio{
-  background:var(--cyan);
+input[type="text"] {
+  width: 100%;
+  padding: 15px 15px 15px 44px;
+  border: 1px solid var(--border-hi);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  outline: none;
+  text-transform: uppercase;
+  transition: border-color .2s, box-shadow .2s;
 }
 
-.checkin{
-  background:var(--green);
+input[type="text"]::placeholder {
+  font-size: 14px;
+  letter-spacing: .5px;
+  color: var(--muted);
+  text-transform: none;
 }
 
-.checkout{
-  background:var(--blue);
+input[type="text"]:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(245,158,11,.1);
 }
 
-.reset{
-  background:var(--red);
+/* ── Staff Profile Card ───────────────── */
+
+.staff-card {
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: none;
+  animation: pop .25s ease both;
 }
 
-.staff-card{
-  background:var(--card-dark);
-  border-radius:12px;
-  padding:15px;
-  margin-top:15px;
-  display:none;
-  border:1px solid var(--border);
+.staff-card.visible { display: block; }
+
+.staff-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.staff-card p{
-  margin-top:5px;
-  color:var(--muted);
+.staff-avatar {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: var(--panel-hi);
+  border: 1px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
-.message{
-  margin-top:15px;
-  background:var(--card-dark);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:15px;
-  min-height:55px;
-  line-height:1.6;
-  font-size:14px;
+.staff-info-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  line-height: 1.1;
 }
 
-.footer{
-  text-align:center;
-  margin-top:25px;
-  color:var(--muted);
-  font-size:13px;
+.staff-info-email {
+  margin-top: 3px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
 }
 
-.loading{
-  opacity:0.7;
-  pointer-events:none;
+.staff-info-id {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  background: var(--panel-hi);
+  border: 1px solid var(--border-hi);
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--amber);
 }
 
-@media(max-width:700px){
+/* Today's attendance status row */
+.staff-att-status {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  .container{
-    padding:15px;
-  }
+.att-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid transparent;
+}
 
-  .header{
-    flex-direction:column;
-  }
+.att-pill.not-in    { background: rgba(90,98,120,.15);  border-color: var(--border-hi); color: var(--muted);  }
+.att-pill.checked-in{ background: rgba(34,197,94,.1);   border-color: var(--green-dim); color: var(--green);  }
+.att-pill.checked-out{ background: rgba(56,189,248,.1); border-color: var(--blue-dim);  color: var(--blue);   }
 
-  .live-time{
-    text-align:left;
-  }
+.att-pill .dot { animation: none; }
 
-  .status-grid{
-    grid-template-columns:1fr;
-  }
+.att-times {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+}
+.att-times b { color: var(--text); }
 
+/* ════════════════════════════════════════
+   CAMERA / VIEWFINDER
+════════════════════════════════════════ */
+
+.viewfinder {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16/9;
+  border: 1px solid var(--border-hi);
+  margin-bottom: 0;
+}
+
+video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vf-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--amber);
+  border-style: solid;
+  opacity: .65;
+  z-index: 2;
+}
+
+.vf-corner.tl { top:10px;    left:10px;   border-width:2px 0 0 2px; border-radius:4px 0 0 0; }
+.vf-corner.tr { top:10px;    right:10px;  border-width:2px 2px 0 0; border-radius:0 4px 0 0; }
+.vf-corner.bl { bottom:10px; left:10px;   border-width:0 0 2px 2px; border-radius:0 0 0 4px; }
+.vf-corner.br { bottom:10px; right:10px;  border-width:0 2px 2px 0; border-radius:0 0 4px 0; }
+
+.vf-scan {
+  position: absolute;
+  left:0; right:0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  opacity: .4;
+  animation: scanline 2.8s linear infinite;
+  z-index: 2;
+}
+
+.vf-label {
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--amber);
+  opacity: .5;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* Camera unavailable overlay */
+.vf-unavailable {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0,0,0,.7);
+  z-index: 3;
+}
+.vf-unavailable.show { display: flex; }
+.vf-unavailable p { font-size: 13px; color: var(--muted); }
+
+/* ════════════════════════════════════════
+   SELFIE PREVIEW PANEL
+════════════════════════════════════════ */
+
+.selfie-preview-wrap {
+  display: none;
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border-hi);
+  border-radius: 14px;
+  padding: 14px;
+  animation: pop .25s ease both;
+}
+
+.selfie-preview-wrap.visible { display: block; }
+
+.selfie-preview-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.selfie-preview-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.selfie-img {
+  width: 80px; height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid var(--border-hi);
+  flex-shrink: 0;
+}
+
+.selfie-confirm-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.selfie-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ════════════════════════════════════════
+   ACTION BUTTONS
+════════════════════════════════════════ */
+
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.action-btn {
+  position: relative;
+  border: none;
+  border-radius: 12px;
+  height: 64px;
+  cursor: pointer;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  transition: transform .15s, opacity .15s, box-shadow .2s;
+}
+
+.action-btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.action-btn:hover:not(:disabled)::after { opacity: 1; }
+.action-btn:hover:not(:disabled)        { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.action-btn:active:not(:disabled)       { transform: translateY(0); }
+.action-btn:disabled                    { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-icon { font-size: 20px; line-height: 1; }
+.btn-label { font-family: var(--font-display); }
+
+/* Button spinner */
+.btn-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+
+.action-btn.loading .btn-icon,
+.action-btn.loading .btn-label { display: none; }
+.action-btn.loading .btn-spinner { display: block; }
+
+/* Button themes */
+.btn-lookup   { background: linear-gradient(135deg, #6d28d9, #7c3aed); grid-column: 1 / -1; }
+.btn-bio      { background: linear-gradient(135deg, #0e7490, #0891b2); }
+.btn-checkin  { background: linear-gradient(135deg, #15803d, #22c55e); }
+.btn-checkout { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
+.btn-confirm  { background: linear-gradient(135deg, #15803d, #22c55e); font-size:14px; height:46px; }
+.btn-retake   { background: var(--panel-hi); border:1px solid var(--border-hi); color:var(--muted); font-size:13px; height:46px; flex:1; }
+.btn-reset    {
+  grid-column: 1 / -1;
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  height: 44px;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+.btn-reset:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(248,113,113,.06);
+  box-shadow: none;
+}
+
+/* ════════════════════════════════════════
+   MESSAGE BOX
+════════════════════════════════════════ */
+
+.message-box {
+  margin-top: 14px;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color .25s, color .25s, background .25s;
+}
+
+.message-box.success { border-color: var(--green-dim); color: var(--green); background: rgba(34,197,94,.05); }
+.message-box.error   { border-color: var(--red-dim);   color: var(--red);   background: rgba(248,113,113,.05); }
+.message-box.info    { border-color: var(--blue-dim);  color: var(--blue);  background: rgba(56,189,248,.05); }
+.message-box.warning { border-color: var(--amber-dim); color: var(--amber); background: rgba(245,158,11,.05); }
+
+.msg-icon { font-size: 16px; flex-shrink: 0; }
+
+/* ════════════════════════════════════════
+   COUNTDOWN RESET OVERLAY
+════════════════════════════════════════ */
+
+.reset-overlay {
+  position: fixed; inset: 0;
+  background: rgba(9,9,15,.92);
+  z-index: 999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  animation: pop .3s ease both;
+}
+
+.reset-overlay.show { display: flex; }
+
+.reset-icon { font-size: 48px; line-height: 1; }
+
+.reset-msg {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.reset-sub {
+  font-size: 14px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* SVG countdown ring */
+.ring-wrap { position: relative; width: 88px; height: 88px; }
+
+.ring-wrap svg {
+  position: absolute; inset: 0;
+  transform: rotate(-90deg);
+}
+
+.ring-bg   { fill: none; stroke: var(--border); stroke-width: 5; }
+.ring-fill {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 0;
+}
+
+.ring-fill.animating {
+  animation: countdown-ring linear forwards;
+}
+
+.ring-num {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--green);
+}
+
+/* ════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════ */
+
+.footer {
+  text-align: center;
+  margin-top: 32px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--dim);
+  letter-spacing: .5px;
+}
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .clock         { font-size: 30px; }
+  .header        { flex-direction: column; gap: 12px; }
+  .clock-wrap    { text-align: left; }
+  .steps         { gap: 4px; }
+  .step-label    { display: none; }
+  .step-line     { margin: 0 4px; }
+  .action-grid   { grid-template-columns: 1fr; }
+  .btn-reset     { grid-column: auto; }
+  .btn-lookup    { grid-column: auto; }
 }
 
 </style>
 </head>
-
 <body>
 
+<!-- ════════════════════════════════════════
+     COUNTDOWN / SUCCESS OVERLAY
+════════════════════════════════════════ -->
+<div class="reset-overlay" id="resetOverlay">
+  <div class="reset-icon" id="resetOverlayIcon">✅</div>
+  <div class="reset-msg"  id="resetOverlayMsg">Check-In Successful!</div>
+  <div class="ring-wrap">
+    <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <circle class="ring-bg"   cx="40" cy="40" r="35"/>
+      <circle class="ring-fill" cx="40" cy="40" r="35" id="ringFill"/>
+    </svg>
+    <div class="ring-num" id="ringNum">5</div>
+  </div>
+  <div class="reset-sub">Kiosk resets in <span id="resetCountSub">5</span>s</div>
+</div>
+
+
+<!-- ════════════════════════════════════════
+     MAIN
+════════════════════════════════════════ -->
 <div class="container">
 
   <!-- HEADER -->
-
-  <div class="header">
-
+  <div class="header anim-1">
     <div class="brand">
-
-      <img
-        src="./images/pln-logo.jpg"
-        alt="Company Logo"
-        class="logo"
-      />
-
+      <div class="logo-wrap">
+        <img src="./images/pln-logo.jpg" alt="PEAKNOVA Logo" class="logo" />
+        <div class="logo-accent"></div>
+      </div>
       <div>
-
-        <h1>
-          PEAKNOVA LIMITED
-        </h1>
-
-        <p>
-          Smart Attendance Kiosk
-        </p>
-
+        <div class="brand-name">PEAKNOVA LIMITED</div>
+        <div class="brand-sub">Smart Attendance Kiosk</div>
       </div>
-
     </div>
-
-    <div class="live-time">
-
-      <h2 id="liveClock">
-        00:00:00
-      </h2>
-
-      <p id="liveDate">
-        Loading...
-      </p>
-
+    <div class="clock-wrap">
+      <div class="clock"      id="liveClock">00:00:00</div>
+      <div class="clock-date" id="liveDate">Loading…</div>
     </div>
-
   </div>
 
-  <!-- STATUS -->
-
-  <div class="card">
-
-    <h3>System Status</h3>
-
-    <div class="status-grid">
+  <!-- STATUS BAR -->
+  <div class="status-bar anim-2">
+    <div class="status-items">
 
       <div class="status-item">
-        Internet
-        <span
-          id="internetStatus"
-          class="online"
-        >
-          Online
-        </span>
+        <span class="dot dim" id="internetDot"></span>
+        <b id="internetStatus" class="text-muted">Checking…</b>
       </div>
 
       <div class="status-item">
-        Camera
-        <span id="cameraStatus">
-          Initializing...
-        </span>
+        <span class="dot dim" id="cameraDot"></span>
+        <b id="cameraStatus" class="text-muted">Camera…</b>
       </div>
 
       <div class="status-item">
-        GPS
-        <span id="gpsStatus">
-          Checking...
-        </span>
+        <span class="dot dim" id="gpsDot"></span>
+        <b id="gpsStatus" class="text-muted">GPS…</b>
       </div>
 
     </div>
-
+    <div class="time-window" id="timeWindowBadge">— —</div>
   </div>
 
-  <!-- STAFF LOOKUP -->
+  <!-- STEP PROGRESS -->
+  <div class="steps anim-2" id="stepsRow">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <div class="step-label">Identify</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step2">
+      <div class="step-num">2</div>
+      <div class="step-label">Verify</div>
+    </div>
+    <div class="step-line" id="step2Line"></div>
+    <div class="step" id="step3">
+      <div class="step-num">3</div>
+      <div class="step-label">Action</div>
+    </div>
+  </div>
 
-  <div class="card">
+  <!-- ── STEP 1: Staff Lookup ──────────── -->
+  <div class="section anim-3" id="sectionLookup">
+    <div class="section-title">Step 1 — Staff Identification</div>
 
-    <h3>Enter Staff ID</h3>
+    <div class="input-wrap">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 10h.01M8 10h.01M12 14h.01" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="text"
+        id="staffIdInput"
+        placeholder="Enter Staff ID (e.g. PNL-001)"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        maxlength="12"
+      />
+    </div>
 
-    <input
-      type="text"
-      id="staffId"
-      placeholder="Example: PNL-001"
-      autocomplete="off"
-    />
+    <div class="action-grid" style="margin-top:12px;">
+      <button class="action-btn btn-lookup" id="lookupBtn">
+        <span class="btn-icon">🔍</span>
+        <span class="btn-label">Find Staff</span>
+        <span class="btn-spinner"></span>
+      </button>
+    </div>
 
-    <button
-      class="lookup"
-      id="lookupBtn"
-    >
-      Find Staff
-    </button>
+    <!-- Staff profile card -->
+    <div class="staff-card" id="staffCard">
+      <div class="staff-card-inner">
+        <div class="staff-avatar">👤</div>
+        <div>
+          <div class="staff-info-name"  id="staffName">—</div>
+          <div class="staff-info-email" id="staffEmail">—</div>
+          <div class="staff-info-id">   <span>🪪</span><span id="staffIdDisplay">—</span></div>
+        </div>
+      </div>
 
-    <div
-      class="staff-card"
-      id="staffCard"
-    >
+      <!-- Today's attendance status -->
+      <div class="staff-att-status">
+        <div class="att-pill not-in" id="todayPill">
+          <span class="dot dim" id="todayDot"></span>
+          <span id="todayPillText">Not Checked In Today</span>
+        </div>
+        <div class="att-times" id="todayTimes" style="display:none">
+          <span>IN&nbsp;<b id="todayTimeIn">—</b></span>
+          <span>OUT&nbsp;<b id="todayTimeOut">—</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <h3 id="staffName">
-        Staff Name
-      </h3>
+  <!-- ── STEP 2 + 3: Camera + Actions ──── -->
+  <div class="section anim-4" id="sectionCamera">
+    <div class="section-title">Step 2 — Identity Verification &amp; Action</div>
 
-      <p id="staffEmail">
-        staff@email.com
-      </p>
+    <!-- Viewfinder -->
+    <div class="viewfinder">
+      <video id="video" autoplay muted playsinline></video>
+      <div class="vf-corner tl"></div>
+      <div class="vf-corner tr"></div>
+      <div class="vf-corner bl"></div>
+      <div class="vf-corner br"></div>
+      <div class="vf-scan"></div>
+      <div class="vf-label">LIVE FEED</div>
+      <div class="vf-unavailable" id="cameraUnavailable">
+        <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--red);opacity:.7">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72M4.5 4.5l15 15M9.75 9.75c0 .414-.168.79-.44 1.06m-1.061 1.06A1.5 1.5 0 009.75 12M9 9l.008-.008M12 12l.008-.008"/>
+        </svg>
+        <p>Camera unavailable — check permissions</p>
+      </div>
+    </div>
+
+    <!-- Selfie preview (shown after capture, before submit) -->
+    <div class="selfie-preview-wrap" id="selfiePreview">
+      <div class="selfie-preview-label">📸 Selfie Captured — Confirm?</div>
+      <div class="selfie-preview-inner">
+        <img class="selfie-img" id="selfieImg" src="" alt="Captured selfie" />
+        <div class="selfie-confirm-text">
+          Make sure your face is clearly visible and well-lit.<br>
+          Tap <strong>Confirm</strong> to submit, or <strong>Retake</strong> to try again.
+        </div>
+      </div>
+      <div class="selfie-btns">
+        <button class="action-btn btn-retake" id="retakeBtn">↩ Retake</button>
+        <button class="action-btn btn-confirm" id="confirmBtn">
+          <span class="btn-label">✓ Confirm &amp; Submit</span>
+          <span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-grid" id="actionGrid">
+
+      <button class="action-btn btn-bio" id="bioBtn" disabled>
+        <span class="btn-icon">🔐</span>
+        <span class="btn-label">Verify Identity</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-checkin" id="checkinBtn" disabled>
+        <span class="btn-icon">✅</span>
+        <span class="btn-label">Check In</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-checkout" id="checkoutBtn" disabled>
+        <span class="btn-icon">🚪</span>
+        <span class="btn-label">Check Out</span>
+        <span class="btn-spinner"></span>
+      </button>
+
+      <button class="action-btn btn-reset" id="resetBtn">
+        ↩ Reset Kiosk
+      </button>
 
     </div>
 
-  </div>
-
-  <!-- CAMERA -->
-
-  <div class="card">
-
-    <h3>Identity Verification</h3>
-
-    <video
-      id="video"
-      autoplay
-      muted
-      playsinline
-    ></video>
-
-    <button
-      class="bio"
-      id="bioBtn"
-      disabled
-    >
-      🔐 Verify Identity
-    </button>
-
-    <button
-      class="checkin"
-      id="checkinBtn"
-      disabled
-    >
-      Check In
-    </button>
-
-    <button
-      class="checkout"
-      id="checkoutBtn"
-      disabled
-    >
-      Check Out
-    </button>
-
-    <button
-      class="reset"
-      id="resetBtn"
-    >
-      Reset Kiosk
-    </button>
-
-    <div
-      class="message"
-      id="message"
-    >
-      Waiting for staff...
+    <!-- Feedback message -->
+    <div class="message-box" id="message">
+      <span class="msg-icon">ℹ️</span>
+      <span id="messageText">Waiting for staff identification…</span>
     </div>
 
   </div>
 
   <div class="footer">
-    PEAKNOVA LIMITED • Smart Attendance System
+    PEAKNOVA LIMITED &nbsp;•&nbsp; SMART ATTENDANCE KIOSK &nbsp;•&nbsp; v2.0
   </div>
 
-</div>
+</div><!-- /container -->
+
 
 <script type="module">
 
-import { db }
-from "./js/firebase.js";
+import { db } from "./js/firebase.js";
 
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-  setDoc
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  collection, query, where,
+  getDocs, doc, getDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  startCamera,
-  verifyBiometric,
-  captureImage,
-  syncOfflineAttendance
-}
-from "./js/app.js";
+  startCamera, verifyBiometric,
+  captureImage, syncOfflineAttendance
+} from "./js/app.js";
 
-import {
-  saveOffline,
-  getLocation
-}
-from "./js/sync.js";
+import { saveOffline, getLocation } from "./js/sync.js";
 
-// ======================================
-// HTTPS CHECK
-// ======================================
 
-if(
-  location.protocol !== "https:" &&
-  location.hostname !== "localhost"
-){
+// ══════════════════════════════════════
+// HTTPS GUARD
+// ══════════════════════════════════════
 
-  alert(
-    "This attendance system requires your camera and biometric support."
-  );
-
+if (location.protocol !== "https:" && location.hostname !== "localhost") {
+  console.warn("HTTPS required for camera and biometric features.");
 }
 
-// ======================================
-// ELEMENTS
-// ======================================
 
-const video =
-  document.getElementById("video");
+// ══════════════════════════════════════
+// DOM REFS
+// ══════════════════════════════════════
 
-const message =
-  document.getElementById("message");
+const $ = id => document.getElementById(id);
 
-const lookupBtn =
-  document.getElementById("lookupBtn");
+const video             = $("video");
+const staffIdInput      = $("staffIdInput");
+const staffCard         = $("staffCard");
+const staffNameEl       = $("staffName");
+const staffEmailEl      = $("staffEmail");
+const staffIdDisplay    = $("staffIdDisplay");
+const todayPill         = $("todayPill");
+const todayPillText     = $("todayPillText");
+const todayDot          = $("todayDot");
+const todayTimes        = $("todayTimes");
+const todayTimeIn       = $("todayTimeIn");
+const todayTimeOut      = $("todayTimeOut");
+const lookupBtn         = $("lookupBtn");
+const bioBtn            = $("bioBtn");
+const checkinBtn        = $("checkinBtn");
+const checkoutBtn       = $("checkoutBtn");
+const resetBtn          = $("resetBtn");
+const selfiePreview     = $("selfiePreview");
+const selfieImg         = $("selfieImg");
+const retakeBtn         = $("retakeBtn");
+const confirmBtn        = $("confirmBtn");
+const cameraUnavailable = $("cameraUnavailable");
+const resetOverlay      = $("resetOverlay");
 
-const bioBtn =
-  document.getElementById("bioBtn");
 
-const checkinBtn =
-  document.getElementById("checkinBtn");
-
-const checkoutBtn =
-  document.getElementById("checkoutBtn");
-
-const resetBtn =
-  document.getElementById("resetBtn");
-
-const staffIdInput =
-  document.getElementById("staffId");
-
-const staffCard =
-  document.getElementById("staffCard");
-
-const staffName =
-  document.getElementById("staffName");
-
-const staffEmail =
-  document.getElementById("staffEmail");
-
-const internetStatus =
-  document.getElementById("internetStatus");
-
-const gpsStatus =
-  document.getElementById("gpsStatus");
-
-const cameraStatus =
-  document.getElementById("cameraStatus");
-
-// ======================================
+// ══════════════════════════════════════
 // STATE
-// ======================================
+// ══════════════════════════════════════
 
-let currentStaff = null;
+let currentStaff      = null;   // { uid, name, email, staffId, department, ... }
 let biometricVerified = false;
-let currentLocation = null;
+let currentLocation   = null;
+let todayRecord       = null;   // today's Firestore attendance doc for currentStaff
+let pendingAction     = null;   // "checkin" | "checkout" — action waiting for selfie confirm
+let capturedSelfie    = null;   // base64 data URL
 
-// ======================================
+
+// ══════════════════════════════════════
 // HELPERS
-// ======================================
+// ══════════════════════════════════════
 
-function showMessage(text){
-
-  message.innerText = text;
-
+/** Returns today's date as YYYY-MM-DD in LOCAL time (avoids UTC midnight drift) */
+function getToday() {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
-function resetKiosk(){
+function str(v) { return (v === null || v === undefined) ? "" : String(v).trim(); }
 
-  currentStaff = null;
-
-  biometricVerified = false;
-
-  staffIdInput.value = "";
-
-  staffCard.style.display =
-    "none";
-
-  bioBtn.disabled = true;
-
-  checkinBtn.disabled = true;
-
-  checkoutBtn.disabled = true;
-
-  showMessage(
-    "Waiting for staff..."
-  );
-
+function formatTime(ts) {
+  if (!ts) return "—";
+  try {
+    const d = ts instanceof Date ? ts : (typeof ts.toDate === "function" ? ts.toDate() : new Date(ts));
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  } catch { return "—"; }
 }
 
-function getToday(){
-
-  return new Date()
-    .toISOString()
-    .split("T")[0];
-
+/**
+ * Attendance window logic.
+ * Returns: "present" | "late" | "checkout" | "closed"
+ */
+function getTimeWindow() {
+  const now  = new Date();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  if (mins <= 510) return "present";   // ≤ 08:30 → on time
+  if (mins <= 540) return "late";      // ≤ 09:00 → late
+  if (mins >= 990 && mins <= 1110) return "checkout"; // 16:30–18:30
+  if (mins > 540 && mins < 990)  return "closed";
+  return "closed";
 }
 
-function getAttendanceStatus(){
+function setDot(dotId, textId, state, label) {
+  const dot  = $(dotId);
+  const text = $(textId);
+  dot.className  = `dot ${state}`;
+  text.className = `text-${state === "dim" ? "muted" : state}`;
+  text.textContent = label;
+}
 
-  const now = new Date();
+const MSG_ICONS = { success: "✅", error: "❌", info: "ℹ️", warning: "⚠️" };
 
-  const mins =
-    now.getHours() * 60 +
-    now.getMinutes();
+function showMessage(text, type = "info") {
+  const box  = $("message");
+  box.className = `message-box ${type}`;
+  box.querySelector(".msg-icon").textContent = MSG_ICONS[type] || "ℹ️";
+  $("messageText").textContent = text;
+}
 
-  if(mins <= 510){
-
-    return "present";
-
+function setStep(n) {
+  // n = 1 | 2 | 3
+  for (let i = 1; i <= 3; i++) {
+    const el = $(`step${i}`);
+    el.className = "step" + (i < n ? " done" : i === n ? " active" : "");
   }
+}
 
-  if(mins <= 540){
+function setBtnLoading(btn, state) {
+  state ? btn.classList.add("loading") : btn.classList.remove("loading");
+  btn.disabled = state;
+}
 
-    return "late";
-
+/**
+ * After staff is found, read their today's attendance record
+ * and update the status pill + button enabled states.
+ */
+async function loadTodayRecord(uid) {
+  const today = getToday();
+  try {
+    const snap = await getDoc(doc(db, "attendance", `${uid}_${today}`));
+    todayRecord = snap.exists() ? snap.data() : null;
+  } catch {
+    todayRecord = null;
   }
-
-  return "blocked";
-
+  syncButtonStates();
+  renderTodayStatus();
 }
 
-// ======================================
-// CAMERA
-// ======================================
+function renderTodayStatus() {
+  const hasIn  = !!todayRecord?.checkInTime;
+  const hasOut = !!todayRecord?.checkOutTime;
 
-try {
-
-  await startCamera(video);
-
-  cameraStatus.innerText =
-    "Camera Ready";
-
-} catch(err){
-
-  console.error(err);
-
-  cameraStatus.innerText =
-    "Camera Unavailable";
-
-  showMessage(
-    "Camera unavailable."
-  );
-
-}
-
-// ======================================
-// INTERNET STATUS
-// ======================================
-
-function updateInternet(){
-
-  if(navigator.onLine){
-
-    internetStatus.innerText =
-      "Online";
-
-    internetStatus.className =
-      "online";
-
+  if (hasOut) {
+    todayPill.className    = "att-pill checked-out";
+    todayDot.className     = "dot green";
+    todayPillText.textContent = "Checked Out Today";
+  } else if (hasIn) {
+    todayPill.className    = "att-pill checked-in";
+    todayDot.className     = "dot green";
+    todayPillText.textContent = "Checked In Today";
   } else {
-
-    internetStatus.innerText =
-      "Offline";
-
-    internetStatus.className =
-      "offline";
-
+    todayPill.className    = "att-pill not-in";
+    todayDot.className     = "dot dim";
+    todayPillText.textContent = "Not Checked In Today";
   }
 
+  if (hasIn) {
+    todayTimes.style.display  = "flex";
+    todayTimeIn.textContent   = formatTime(todayRecord.checkInTime);
+    todayTimeOut.textContent  = hasOut ? formatTime(todayRecord.checkOutTime) : "—";
+  } else {
+    todayTimes.style.display  = "none";
+  }
+}
+
+function syncButtonStates() {
+  if (!currentStaff) {
+    bioBtn.disabled = checkinBtn.disabled = checkoutBtn.disabled = true;
+    return;
+  }
+
+  const hasIn    = !!todayRecord?.checkInTime;
+  const hasOut   = !!todayRecord?.checkOutTime;
+  const window_  = getTimeWindow();
+
+  // Bio: always enabled once staff found
+  bioBtn.disabled = false;
+
+  // Check In: needs bio + no existing record + window open for check-in
+  const inWindowOk = window_ === "present" || window_ === "late";
+  checkinBtn.disabled = !biometricVerified || hasIn || !inWindowOk;
+
+  // Check Out: needs bio + checked in + not yet out + checkout window
+  checkoutBtn.disabled = !biometricVerified || !hasIn || hasOut || window_ !== "checkout";
+}
+
+
+// ══════════════════════════════════════
+// TIME WINDOW BADGE
+// ══════════════════════════════════════
+
+function updateTimeWindowBadge() {
+  const badge   = $("timeWindowBadge");
+  const window_ = getTimeWindow();
+  const map = {
+    present:  ["open-in",   "🟢 Check-In Open"],
+    late:     ["open-late", "🟡 Late Check-In"],
+    checkout: ["open-out",  "🔵 Check-Out Open"],
+    closed:   ["closed",    "🔴 Window Closed"],
+  };
+  const [cls, label] = map[window_] || ["closed", "—"];
+  badge.className   = `time-window ${cls}`;
+  badge.textContent = label;
+
+  // Also re-evaluate button states every minute
+  if (currentStaff) syncButtonStates();
+}
+
+updateTimeWindowBadge();
+setInterval(updateTimeWindowBadge, 30_000);
+
+
+// ══════════════════════════════════════
+// INITIALIZATION (parallel)
+// ══════════════════════════════════════
+
+(async () => {
+
+  // Run camera + GPS in parallel — one failing doesn't block the other
+  const [cameraResult, gpsResult] = await Promise.allSettled([
+
+    startCamera(video).then(() => {
+      setDot("cameraDot", "cameraStatus", "green", "Camera Ready");
+    }),
+
+    getLocation().then(loc => {
+      currentLocation = loc;
+      setDot("gpsDot", "gpsStatus", "green", "GPS Active");
+    })
+
+  ]);
+
+  if (cameraResult.status === "rejected") {
+    setDot("cameraDot", "cameraStatus", "red", "Unavailable");
+    cameraUnavailable.classList.add("show");
+    showMessage("Camera access denied. Allow camera permissions to use this kiosk.", "error");
+  }
+
+  if (gpsResult.status === "rejected") {
+    setDot("gpsDot", "gpsStatus", "amber", "Denied");
+  }
+
+  // Initial offline sync
+  syncOfflineAttendance();
+
+})();
+
+
+// ══════════════════════════════════════
+// INTERNET STATUS
+// ══════════════════════════════════════
+
+function updateInternet() {
+  if (navigator.onLine) {
+    setDot("internetDot", "internetStatus", "green", "Online");
+  } else {
+    setDot("internetDot", "internetStatus", "red", "Offline");
+  }
 }
 
 updateInternet();
+window.addEventListener("online",  () => { updateInternet(); syncOfflineAttendance(); });
+window.addEventListener("offline", () => { updateInternet(); });
 
-window.addEventListener(
-  "online",
-  ()=>{
 
-    updateInternet();
+// ══════════════════════════════════════
+// STAFF LOOKUP
+// ══════════════════════════════════════
 
-    syncOfflineAttendance();
-
+async function doLookup() {
+  const id = staffIdInput.value.trim().toUpperCase();
+  if (!id) {
+    showMessage("Please enter a Staff ID.", "warning");
+    return;
   }
-);
 
-window.addEventListener(
-  "offline",
-  updateInternet
-);
+  setBtnLoading(lookupBtn, true);
 
-// ======================================
-// GPS
-// ======================================
+  try {
+    const q    = query(collection(db, "users"), where("staffId", "==", id));
+    const snap = await getDocs(q);
 
-try {
+    if (snap.empty) {
+      showMessage(`No staff found with ID "${id}". Check the ID and try again.`, "error");
+      return;
+    }
 
-  currentLocation =
-    await getLocation();
+    const docSnap = snap.docs[0];
+    currentStaff  = { uid: docSnap.id, ...docSnap.data() };
 
-  gpsStatus.innerText =
-    "Location Available";
+    // Populate card
+    staffNameEl.textContent    = str(currentStaff.name)     || "—";
+    staffEmailEl.textContent   = str(currentStaff.email)    || "—";
+    staffIdDisplay.textContent = str(currentStaff.staffId)  || id;
 
-} catch(err){
+    staffCard.classList.add("visible");
 
-  gpsStatus.innerText =
-    "Location Denied";
+    // Load today's record + update buttons
+    await loadTodayRecord(currentStaff.uid);
 
+    setStep(2);
+    showMessage(`Welcome, ${str(currentStaff.name) || "Staff"}. Please verify your identity.`, "info");
+
+  } catch (err) {
+    console.error("Lookup error:", err);
+    showMessage(err.message || "Lookup failed. Please try again.", "error");
+  } finally {
+    setBtnLoading(lookupBtn, false);
+  }
 }
 
-// ======================================
-// STAFF LOOKUP
-// ======================================
+lookupBtn.addEventListener("click", doLookup);
 
-lookupBtn.addEventListener(
-  "click",
-  async ()=>{
+staffIdInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") doLookup();
+});
 
-    try {
 
-      lookupBtn.classList.add("loading");
+// ══════════════════════════════════════
+// BIOMETRIC VERIFY
+// ══════════════════════════════════════
 
-      const staffId =
-        staffIdInput.value.trim();
+bioBtn.addEventListener("click", async () => {
+  setBtnLoading(bioBtn, true);
+  try {
+    if (!window.PublicKeyCredential) {
+      throw new Error("Biometric authentication is not supported on this device.");
+    }
+    const result = await verifyBiometric();
+    biometricVerified = true;
+    syncButtonStates();
+    setStep(3);
+    showMessage(result.message || "Identity verified. You may now check in or out.", "success");
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message || "Biometric verification failed. Try again.", "error");
+  } finally {
+    setBtnLoading(bioBtn, false);
+  }
+});
 
-      if(!staffId){
 
-        throw new Error(
-          "Enter staff ID."
-        );
+// ══════════════════════════════════════
+// CHECK-IN FLOW (with selfie preview)
+// ══════════════════════════════════════
 
+checkinBtn.addEventListener("click", async () => {
+  if (!currentStaff || !biometricVerified) {
+    showMessage("Verify identity first.", "warning");
+    return;
+  }
+
+  // Capture selfie and show preview before submitting
+  capturedSelfie = captureImage(video);
+  pendingAction  = "checkin";
+
+  selfieImg.src = capturedSelfie;
+  selfiePreview.classList.add("visible");
+  showMessage("Selfie captured. Review and confirm.", "info");
+});
+
+
+// ══════════════════════════════════════
+// CHECK-OUT FLOW
+// ══════════════════════════════════════
+
+checkoutBtn.addEventListener("click", async () => {
+  if (!currentStaff || !biometricVerified) {
+    showMessage("Verify identity first.", "warning");
+    return;
+  }
+
+  pendingAction = "checkout";
+
+  // No selfie for checkout — go straight to confirm
+  capturedSelfie = null;
+  submitAction();
+});
+
+
+// ══════════════════════════════════════
+// SELFIE: RETAKE / CONFIRM
+// ══════════════════════════════════════
+
+retakeBtn.addEventListener("click", () => {
+  selfiePreview.classList.remove("visible");
+  capturedSelfie = null;
+  pendingAction  = null;
+  showMessage("Selfie discarded. Click Check In to try again.", "info");
+});
+
+confirmBtn.addEventListener("click", () => {
+  submitAction();
+});
+
+
+// ══════════════════════════════════════
+// SUBMIT ATTENDANCE
+// ══════════════════════════════════════
+
+async function submitAction() {
+  if (!pendingAction || !currentStaff) return;
+
+  setBtnLoading(confirmBtn, true);
+  checkinBtn.disabled  = true;
+  checkoutBtn.disabled = true;
+
+  const today  = getToday();
+  const ref    = doc(db, "attendance", `${currentStaff.uid}_${today}`);
+
+  try {
+
+    if (pendingAction === "checkin") {
+
+      // Final guard: check Firestore in case another device checked in
+      const existing = await getDoc(ref);
+      if (existing.exists() && existing.data().checkInTime) {
+        throw new Error("Already checked in today.");
       }
 
-      const q =
-        query(
-          collection(db, "users"),
-          where("staffId", "==", staffId)
-        );
-
-      const snap =
-        await getDocs(q);
-
-      if(snap.empty){
-
-        throw new Error(
-          "Staff not found."
-        );
-
+      const windowStatus = getTimeWindow();
+      if (windowStatus !== "present" && windowStatus !== "late") {
+        throw new Error("Check-in window is closed for today.");
       }
 
-      const docData =
-        snap.docs[0];
-
-      currentStaff = {
-        uid: docData.id,
-        ...docData.data()
+      const data = {
+        userId:            currentStaff.uid,
+        name:              str(currentStaff.name),
+        email:             str(currentStaff.email),
+        staffId:           str(currentStaff.staffId),
+        department:        str(currentStaff.department),
+        date:              today,
+        checkInTime:       new Date().toISOString(),
+        method:            "kiosk",
+        status:            windowStatus,   // "present" | "late"
+        selfieUrl:         capturedSelfie || "",
+        biometricVerified: true,
+        location:          currentLocation,
+        offline:           !navigator.onLine,
+        synced:            navigator.onLine,
       };
 
-      staffName.innerText =
-        currentStaff.name;
-
-      staffEmail.innerText =
-        currentStaff.email;
-
-      staffCard.style.display =
-        "block";
-
-      bioBtn.disabled = false;
-
-      showMessage(
-        "Staff found. Verify identity."
-      );
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      lookupBtn.classList.remove("loading");
-
-    }
-
-  }
-);
-
-// ======================================
-// BIOMETRIC
-// ======================================
-
-bioBtn.addEventListener(
-  "click",
-  async ()=>{
-
-    try {
-
-      bioBtn.classList.add("loading");
-
-      if(!window.PublicKeyCredential){
-
-        throw new Error(
-          "Biometric authentication not supported."
-        );
-
-      }
-
-      const result =
-        await verifyBiometric();
-
-      biometricVerified = true;
-
-      checkinBtn.disabled = false;
-
-      checkoutBtn.disabled = false;
-
-      showMessage(
-        result.message
-      );
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      bioBtn.classList.remove("loading");
-
-    }
-
-  }
-);
-
-// ======================================
-// CHECK IN
-// ======================================
-
-checkinBtn.addEventListener(
-  "click",
-  async ()=>{
-
-    try {
-
-      checkinBtn.classList.add("loading");
-
-      if(!currentStaff){
-
-        throw new Error(
-          "No staff selected."
-        );
-
-      }
-
-      if(!biometricVerified){
-
-        throw new Error(
-          "Verify identity first."
-        );
-
-      }
-
-      const attendanceStatus =
-        getAttendanceStatus();
-
-      if(
-        attendanceStatus === "blocked"
-      ){
-
-        throw new Error(
-          "Check-in closed after 9:00 AM."
-        );
-
-      }
-
-      const today =
-        getToday();
-
-      const attendanceRef =
-        doc(
-          db,
-          "attendance",
-          `${currentStaff.uid}_${today}`
-        );
-
-      const existing =
-        await getDoc(attendanceRef);
-
-      if(existing.exists()){
-
-        throw new Error(
-          "Already checked in today."
-        );
-
-      }
-
-      const selfieUrl =
-        captureImage(video);
-
-      const attendanceData = {
-
-        userId:
-          currentStaff.uid,
-
-        name:
-          currentStaff.name,
-
-        email:
-          currentStaff.email,
-
-        date: today,
-
-        checkInTime:
-          new Date().toISOString(),
-
-        method: "kiosk",
-
-        status:
-          attendanceStatus,
-
-        selfieUrl,
-
-        biometricVerified:true,
-
-        location:
-          currentLocation,
-
-        offline:
-          !navigator.onLine,
-
-        synced:
-          navigator.onLine
-
-      };
-
-      if(!navigator.onLine){
-
-        saveOffline(
-          attendanceData
-        );
-
+      if (!navigator.onLine) {
+        saveOffline(data);
       } else {
-
-        await setDoc(
-          attendanceRef,
-          attendanceData
-        );
-
+        await setDoc(ref, data, { merge: true });
       }
 
-      showMessage(
-        "Check-in successful."
-      );
+      showSuccess("Check-In Successful!", `✅ ${str(currentStaff.name)} is marked ${windowStatus}.`);
 
-      setTimeout(
-        resetKiosk,
-        4000
-      );
+    } else if (pendingAction === "checkout") {
 
-    } catch(err){
+      const snap = await getDoc(ref);
+      if (!snap.exists() || !snap.data().checkInTime) {
+        throw new Error("No check-in record found for today.");
+      }
+      if (snap.data().checkOutTime) {
+        throw new Error("Already checked out today.");
+      }
 
-      console.error(err);
+      // Use merge — only update the two fields, never overwrite the full doc
+      await setDoc(ref, {
+        checkOutTime: new Date().toISOString(),
+        overridden:   false,
+      }, { merge: true });
 
-      showMessage(err.message);
-
-    } finally {
-
-      checkinBtn.classList.remove("loading");
-
+      showSuccess("Check-Out Successful!", `🚪 ${str(currentStaff.name)} has been checked out.`);
     }
 
+  } catch (err) {
+    console.error("Submit error:", err);
+    showMessage(err.message || "An error occurred. Please try again.", "error");
+    selfiePreview.classList.remove("visible");
+    setBtnLoading(confirmBtn, false);
+    checkinBtn.disabled  = false;
+    checkoutBtn.disabled = false;
+  } finally {
+    pendingAction  = null;
+    capturedSelfie = null;
   }
-);
+}
 
-// ======================================
-// CHECK OUT
-// ======================================
 
-checkoutBtn.addEventListener(
-  "click",
-  async ()=>{
+// ══════════════════════════════════════
+// SUCCESS → COUNTDOWN → RESET
+// ══════════════════════════════════════
 
-    try {
+function showSuccess(title, subtitle) {
+  selfiePreview.classList.remove("visible");
 
-      checkoutBtn.classList.add("loading");
+  $("resetOverlayIcon").textContent = title.includes("Out") ? "🚪" : "✅";
+  $("resetOverlayMsg").textContent  = title;
+  $("resetOverlay").querySelector(".reset-sub").innerHTML =
+    `${subtitle} &nbsp;·&nbsp; Kiosk resets in <span id="resetCountSub">5</span>s`;
 
-      if(!currentStaff){
+  resetOverlay.classList.add("show");
 
-        throw new Error(
-          "No staff selected."
-        );
+  // Animate the SVG ring over 5s
+  const ring = $("ringFill");
+  ring.style.animationDuration = "5s";
+  ring.classList.add("animating");
 
-      }
+  let count = 5;
+  $("ringNum").textContent = count;
+  $("resetCountSub") && ($("resetCountSub").textContent = count);
 
-      if(!biometricVerified){
+  const iv = setInterval(() => {
+    count--;
+    $("ringNum").textContent = count;
+    const sub = document.getElementById("resetCountSub");
+    if (sub) sub.textContent = count;
 
-        throw new Error(
-          "Verify identity first."
-        );
-
-      }
-
-      const now =
-        new Date();
-
-      const mins =
-        now.getHours() * 60 +
-        now.getMinutes();
-
-      if(mins < 990){
-
-        throw new Error(
-          "Cannot check out before 4:30 PM."
-        );
-
-      }
-
-      if(mins > 1110){
-
-        throw new Error(
-          "Check-out closed after 6:30 PM."
-        );
-
-      }
-
-      const today =
-        getToday();
-
-      const attendanceRef =
-        doc(
-          db,
-          "attendance",
-          `${currentStaff.uid}_${today}`
-        );
-
-      const snap =
-        await getDoc(attendanceRef);
-
-      if(!snap.exists()){
-
-        throw new Error(
-          "No check-in found."
-        );
-
-      }
-
-      await setDoc(
-        attendanceRef,
-        {
-          ...snap.data(),
-
-          checkOutTime:
-            new Date().toISOString()
-        }
-      );
-
-      showMessage(
-        "Check-out successful."
-      );
-
-      setTimeout(
-        resetKiosk,
-        4000
-      );
-
-    } catch(err){
-
-      console.error(err);
-
-      showMessage(err.message);
-
-    } finally {
-
-      checkoutBtn.classList.remove("loading");
-
+    if (count <= 0) {
+      clearInterval(iv);
+      ring.classList.remove("animating");
+      resetOverlay.classList.remove("show");
+      resetKiosk();
     }
+  }, 1000);
+}
 
-  }
-);
 
-// ======================================
-// RESET
-// ======================================
+// ══════════════════════════════════════
+// RESET KIOSK
+// ══════════════════════════════════════
 
-resetBtn.addEventListener(
-  "click",
-  resetKiosk
-);
+function resetKiosk() {
+  currentStaff      = null;
+  biometricVerified = false;
+  todayRecord       = null;
+  pendingAction     = null;
+  capturedSelfie    = null;
 
-// ======================================
-// INITIAL OFFLINE SYNC
-// ======================================
+  staffIdInput.value = "";
+  staffCard.classList.remove("visible");
+  selfiePreview.classList.remove("visible");
+  selfieImg.src = "";
 
-syncOfflineAttendance();
+  bioBtn.disabled      = true;
+  checkinBtn.disabled  = true;
+  checkoutBtn.disabled = true;
 
-// ======================================
-// LIVE DATE & TIME
-// ======================================
+  setBtnLoading(confirmBtn,  false);
+  setBtnLoading(lookupBtn,   false);
+  setBtnLoading(bioBtn,      false);
+  setBtnLoading(checkinBtn,  false);
+  setBtnLoading(checkoutBtn, false);
 
-const liveClock =
-  document.getElementById("liveClock");
+  setStep(1);
+  showMessage("Waiting for staff identification…", "info");
+  staffIdInput.focus();
+}
 
-const liveDate =
-  document.getElementById("liveDate");
+resetBtn.addEventListener("click", resetKiosk);
 
-function updateClock(){
+// Focus the input on load
+window.addEventListener("load", () => staffIdInput.focus());
 
+
+// ══════════════════════════════════════
+// LIVE CLOCK
+// ══════════════════════════════════════
+
+function updateClock() {
   const now = new Date();
-
-  const time =
-    now.toLocaleTimeString(
-      "en-US",
-      {
-        hour:"2-digit",
-        minute:"2-digit",
-        second:"2-digit"
-      }
-    );
-
-  const date =
-    now.toLocaleDateString(
-      "en-US",
-      {
-        weekday:"long",
-        year:"numeric",
-        month:"long",
-        day:"numeric"
-      }
-    );
-
-  liveClock.innerText =
-    time;
-
-  liveDate.innerText =
-    date;
-
+  $("liveClock").textContent = now.toLocaleTimeString("en-US", {
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  });
+  $("liveDate").textContent = now.toLocaleDateString("en-US", {
+    weekday: "short", year: "numeric", month: "short", day: "numeric",
+  }).toUpperCase();
 }
 
 updateClock();
-
-setInterval(
-  updateClock,
-  1000
-);
+setInterval(updateClock, 1000);
 
 
-if("serviceWorker" in navigator){
+// ══════════════════════════════════════
+// SERVICE WORKER
+// ══════════════════════════════════════
 
-  window.addEventListener("load", ()=>{
-
-    navigator.serviceWorker.register("./sw.js")
-    .then(()=>{
-
-      console.log(
-        "Service Worker Registered"
-      );
-
-    });
-
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      await navigator.serviceWorker.register("./sw.js");
+    } catch (err) {
+      console.warn("SW registration failed:", err);
+    }
   });
-
 }
 
 </script>
-
 </body>
 </html>
