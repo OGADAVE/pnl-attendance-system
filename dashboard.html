@@ -10,7 +10,6 @@
   href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap"
   rel="stylesheet"
 />
-
 <style>
 
 /* ════════════════════════════════════════
@@ -26,7 +25,6 @@
   --text:      #e2e8f0;
   --muted:     #64748b;
   --dim:       #374151;
-
   --green:     #22c55e;
   --green-dim: #166534;
   --blue:      #38bdf8;
@@ -35,17 +33,15 @@
   --red-dim:   #7f1d1d;
   --amber:     #fbbf24;
   --amber-dim: #78350f;
-
   --font-mono: 'DM Mono', monospace;
   --font-body: 'Outfit', sans-serif;
-
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior:smooth; }
 
 body {
   font-family: var(--font-body);
@@ -56,44 +52,41 @@ body {
 }
 
 body::before {
-  content: '';
-  position: fixed; inset: 0;
+  content:''; position:fixed; inset:0;
   background-image:
     linear-gradient(rgba(34,197,94,.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34,197,94,.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none; z-index: 0;
+    linear-gradient(90deg,rgba(34,197,94,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none; z-index:0;
 }
-
 body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,197,94,.06) 0%, transparent 70%);
-  pointer-events: none; z-index: 0;
+  content:''; position:fixed; inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(34,197,94,.06) 0%,transparent 70%);
+  pointer-events:none; z-index:0;
 }
 
 .container {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 680px;
-  margin: 0 auto;
-  padding: 24px 20px 40px;
+  position:relative; z-index:1;
+  width:100%; max-width:680px;
+  margin:0 auto;
+  padding:24px 20px 40px;
 }
 
 /* ════════════════════════════════════════
    ANIMATIONS
 ════════════════════════════════════════ */
 
-@keyframes fadeUp    { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-@keyframes scanline  { 0% { top:0%; } 100% { top:100%; } }
+@keyframes fadeUp    { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+@keyframes scanline  { 0%{top:0%;} 100%{top:100%;} }
 @keyframes pulse-dot { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-@keyframes spin      { to { transform:rotate(360deg); } }
+@keyframes spin      { to{transform:rotate(360deg);} }
 @keyframes ovalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4);} 50%{box-shadow:0 0 0 8px rgba(34,197,94,0);} }
 @keyframes checkPop  { 0%{transform:scale(0);opacity:0;} 80%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
 
-.anim-1 { animation: fadeUp .5s ease both; }
-.anim-2 { animation: fadeUp .5s .1s ease both; }
-.anim-3 { animation: fadeUp .5s .2s ease both; }
-.anim-4 { animation: fadeUp .5s .3s ease both; }
+.anim-1 { animation:fadeUp .5s ease both; }
+.anim-2 { animation:fadeUp .5s .1s ease both; }
+.anim-3 { animation:fadeUp .5s .2s ease both; }
+.anim-4 { animation:fadeUp .5s .3s ease both; }
 
 /* ════════════════════════════════════════
    HEADER
@@ -106,7 +99,7 @@ body::after {
 .logo-ring { position:absolute; inset:-4px; border-radius:18px; border:1.5px solid rgba(34,197,94,.25); }
 .brand-text h1 { font-size:17px; font-weight:700; letter-spacing:.3px; line-height:1.2; }
 .brand-text p  { margin-top:3px; font-size:12px; color:var(--muted); font-family:var(--font-mono); letter-spacing:.5px; }
-.clock-block { text-align:right; }
+.clock-block   { text-align:right; }
 .clock-display { font-family:var(--font-mono); font-size:38px; font-weight:500; color:var(--green); letter-spacing:2px; line-height:1; text-shadow:0 0 20px rgba(34,197,94,.3); }
 .clock-date    { margin-top:5px; font-size:11px; color:var(--muted); font-family:var(--font-mono); letter-spacing:.4px; }
 
@@ -114,12 +107,8 @@ body::after {
    SUMMARY BANNER
 ════════════════════════════════════════ */
 
-.summary-banner {
-  margin-top:20px; background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--radius-md); padding:14px 18px;
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-}
-.summary-left { display:flex; align-items:center; gap:10px; }
+.summary-banner { margin-top:20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.summary-left   { display:flex; align-items:center; gap:10px; }
 .summary-avatar { width:38px; height:38px; border-radius:10px; background:var(--panel); border:1px solid var(--border-hi); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
 .summary-name   { font-size:14px; font-weight:600; color:var(--text); }
 .summary-dept   { font-size:12px; color:var(--muted); margin-top:2px; }
@@ -128,7 +117,7 @@ body::after {
 .att-pill.not-in      { background:rgba(100,116,139,.15); border-color:var(--dim);       color:var(--muted); }
 .att-pill.checked-in  { background:rgba(34,197,94,.12);   border-color:var(--green-dim); color:var(--green); }
 .att-pill.checked-out { background:rgba(56,189,248,.12);  border-color:var(--blue-dim);  color:var(--blue);  }
-.att-dot { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse-dot 1.6s ease-in-out infinite; }
+.att-dot   { width:6px; height:6px; border-radius:50%; background:currentColor; animation:pulse-dot 1.6s ease-in-out infinite; }
 .att-times { display:flex; gap:12px; font-size:12px; font-family:var(--font-mono); color:var(--muted); }
 .att-times span { display:flex; align-items:center; gap:4px; }
 .att-times b    { color:var(--text); }
@@ -137,32 +126,74 @@ body::after {
    SECTIONS & STATUS
 ════════════════════════════════════════ */
 
-.section { margin-top:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; }
+.section       { margin-top:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; }
 .section-title { font-size:11px; font-weight:600; color:var(--muted); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:14px; font-family:var(--font-mono); }
-.status-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-.status-item { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.status-item.full { grid-column: 1 / -1; }
-.status-label { font-size:12px; color:var(--muted); font-weight:500; }
-.status-value { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:600; font-family:var(--font-mono); }
-.geo-sub { font-size:10px; color:var(--muted); margin-top:3px; font-family:var(--font-mono); line-height:1.4; }
-.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.status-grid   { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.status-item   { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.status-item.full { grid-column:1/-1; align-items:flex-start; }
+.status-label  { font-size:12px; color:var(--muted); font-weight:500; }
+.status-value  { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:600; font-family:var(--font-mono); flex-shrink:0; }
+.geo-sub       { font-size:10px; color:var(--muted); margin-top:3px; font-family:var(--font-mono); line-height:1.4; }
+
+.dot       { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .dot.green { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse-dot 2s ease-in-out infinite; }
 .dot.red   { background:var(--red); }
 .dot.amber { background:var(--amber); animation:pulse-dot 1.4s ease-in-out infinite; }
 .dot.dim   { background:var(--dim); }
+
 .text-green { color:var(--green); }
 .text-red   { color:var(--red);   }
 .text-amber { color:var(--amber); }
 .text-muted { color:var(--muted); }
 
-/* Geofence block banner */
+/* ── Geofence block banner ─────────────── */
 .geo-block-banner {
-  display: none; margin-top:12px; padding:11px 14px;
-  background:rgba(248,113,113,.07); border:1px solid var(--red-dim);
-  border-radius:var(--radius-sm); font-size:12.5px; color:var(--red);
-  font-family:var(--font-mono); line-height:1.6; gap:8px; align-items:flex-start;
+  display:none;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+  padding:12px 14px;
+  background:rgba(248,113,113,.07);
+  border:1px solid var(--red-dim);
+  border-radius:var(--radius-sm);
+  font-size:12.5px;
+  color:var(--red);
+  font-family:var(--font-mono);
+  line-height:1.6;
 }
 .geo-block-banner.show { display:flex; }
+
+/* iOS Settings instruction — shown only on iPhone after permission denial */
+.ios-location-tip {
+  display:none;
+  padding:9px 12px;
+  background:rgba(251,191,36,.07);
+  border:1px solid var(--amber-dim);
+  border-radius:var(--radius-sm);
+  font-size:11.5px;
+  color:var(--amber);
+  line-height:1.7;
+}
+.ios-location-tip.show { display:block; }
+
+/* Retry Location button */
+.btn-retry-location {
+  display:none;
+  border:none;
+  border-radius:var(--radius-sm);
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:600;
+  font-family:var(--font-mono);
+  cursor:pointer;
+  color:white;
+  background:linear-gradient(135deg,#1d4ed8,#38bdf8);
+  transition:opacity .2s, transform .1s;
+  align-self:flex-start;
+}
+.btn-retry-location:hover  { opacity:.9; }
+.btn-retry-location:active { transform:scale(.97); }
+.btn-retry-location.show   { display:inline-flex; align-items:center; gap:6px; }
 
 .office-info { margin-top:12px; padding:10px 14px; background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:12px; color:var(--muted); font-family:var(--font-mono); line-height:1.7; display:flex; gap:8px; align-items:flex-start; }
 
@@ -171,10 +202,10 @@ body::after {
 ════════════════════════════════════════ */
 
 .camera-section { padding-bottom:20px; }
-.viewfinder { position:relative; border-radius:var(--radius-md); overflow:hidden; background:#000; aspect-ratio:16/9; margin-bottom:16px; border:1px solid var(--border-hi); }
-video { width:100%; height:100%; object-fit:cover; display:block; }
+.viewfinder     { position:relative; border-radius:var(--radius-md); overflow:hidden; background:#000; aspect-ratio:16/9; margin-bottom:16px; border:1px solid var(--border-hi); }
+video           { width:100%; height:100%; object-fit:cover; display:block; }
 
-.vf-corner { position:absolute; width:22px; height:22px; border-color:var(--green); border-style:solid; opacity:.6; z-index:2; }
+.vf-corner    { position:absolute; width:22px; height:22px; border-color:var(--green); border-style:solid; opacity:.6; z-index:2; }
 .vf-corner.tl { top:10px;    left:10px;   border-width:2px 0 0 2px; border-radius:4px 0 0 0; }
 .vf-corner.tr { top:10px;    right:10px;  border-width:2px 2px 0 0; border-radius:0 4px 0 0; }
 .vf-corner.bl { bottom:10px; left:10px;   border-width:0 0 2px 2px; border-radius:0 0 0 4px; }
@@ -183,70 +214,36 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
 .vf-scan  { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--green),transparent); opacity:.4; animation:scanline 2.5s linear infinite; z-index:2; }
 .vf-label { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); font-size:10px; font-family:var(--font-mono); color:var(--green); opacity:.55; letter-spacing:2px; z-index:2; text-transform:uppercase; white-space:nowrap; }
 
-.vf-unavailable { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:rgba(0,0,0,.75); z-index:5; }
-.vf-unavailable.show { display:flex; }
-.vf-unavailable svg { color:var(--red); opacity:.7; }
-.vf-unavailable p   { font-size:13px; color:var(--muted); }
+.vf-unavailable       { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:rgba(0,0,0,.75); z-index:5; }
+.vf-unavailable.show  { display:flex; }
+.vf-unavailable svg   { color:var(--red); opacity:.7; }
+.vf-unavailable p     { font-size:13px; color:var(--muted); }
 
 /* ════════════════════════════════════════
    FACE OVAL GUIDE
 ════════════════════════════════════════ */
 
 .face-oval {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: 40%;
-  aspect-ratio: 3 / 4;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.15);
-  z-index: 3;
-  pointer-events: none;
-  transition: border-color .35s ease, box-shadow .35s ease;
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:40%; aspect-ratio:3/4;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.15);
+  z-index:3; pointer-events:none;
+  transition:border-color .35s ease, box-shadow .35s ease;
 }
+.face-oval::before { content:''; position:absolute; inset:-1px; border-radius:50%; opacity:0; transition:opacity .35s; }
 
-.face-oval::before {
-  content: '';
-  position: absolute; inset: -1px;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity .35s;
-}
+.face-oval.state-none     { border-color:rgba(248,113,113,.45); }
+.face-oval.state-adjust   { border-color:rgba(251,191,36,.65);  box-shadow:0 0 14px rgba(251,191,36,.18); }
+.face-oval.state-good     { border-color:rgba(34,197,94,.8);    box-shadow:0 0 18px rgba(34,197,94,.28); animation:ovalPulse 1.8s ease-in-out infinite; }
+.face-oval.state-verified { border-color:rgba(34,197,94,1);     box-shadow:0 0 28px rgba(34,197,94,.5);  animation:none; }
+.face-oval.state-verified::before { background:radial-gradient(ellipse,rgba(34,197,94,.07) 0%,transparent 70%); opacity:1; }
 
-.face-oval.state-none    { border-color: rgba(248,113,113,.45); }
-.face-oval.state-adjust  { border-color: rgba(251,191,36,.65); box-shadow: 0 0 14px rgba(251,191,36,.18); }
-.face-oval.state-good    { border-color: rgba(34,197,94,.8); box-shadow: 0 0 18px rgba(34,197,94,.28); animation: ovalPulse 1.8s ease-in-out infinite; }
-.face-oval.state-verified{ border-color: rgba(34,197,94,1); box-shadow: 0 0 28px rgba(34,197,94,.5); animation: none; }
-.face-oval.state-verified::before { background: radial-gradient(ellipse, rgba(34,197,94,.07) 0%, transparent 70%); opacity:1; }
+.face-check { position:absolute; bottom:-15px; left:50%; transform:translateX(-50%) scale(0); width:28px; height:28px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-size:14px; opacity:0; z-index:4; }
+.face-oval.state-verified .face-check { animation:checkPop .4s .1s cubic-bezier(.34,1.56,.64,1) forwards; }
 
-/* Verified check badge */
-.face-check {
-  position: absolute;
-  bottom: -15px; left: 50%;
-  transform: translateX(-50%) scale(0);
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--green);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; opacity: 0; z-index: 4;
-}
-.face-oval.state-verified .face-check {
-  animation: checkPop .4s .1s cubic-bezier(.34,1.56,.64,1) forwards;
-}
-
-/* Face status pill — inside viewfinder, top-centre */
-.vf-face-status {
-  position: absolute;
-  top: 12px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px; font-family: var(--font-mono);
-  letter-spacing: .5px; z-index: 4;
-  background: rgba(0,0,0,.65);
-  padding: 4px 10px; border-radius: 999px;
-  white-space: nowrap; color: var(--muted);
-  border: 1px solid transparent;
-  transition: color .3s, border-color .3s;
-}
+.vf-face-status { position:absolute; top:12px; left:50%; transform:translateX(-50%); font-size:10px; font-family:var(--font-mono); letter-spacing:.5px; z-index:4; background:rgba(0,0,0,.65); padding:4px 10px; border-radius:999px; white-space:nowrap; color:var(--muted); border:1px solid transparent; transition:color .3s, border-color .3s; }
 .vf-face-status.st-none     { color:var(--red);   border-color:rgba(248,113,113,.3); }
 .vf-face-status.st-adjust   { color:var(--amber); border-color:rgba(251,191,36,.3);  }
 .vf-face-status.st-good     { color:var(--green); border-color:rgba(34,197,94,.3);   }
@@ -268,7 +265,7 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
 .action-btn:hover:not(:disabled)::after { opacity:1; }
 .action-btn:hover:not(:disabled)  { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.4); }
 .action-btn:active:not(:disabled) { transform:translateY(0); }
-.action-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+.action-btn:disabled              { opacity:.35; cursor:not-allowed; transform:none; }
 
 .btn-bio      { background:linear-gradient(135deg,#0f766e,#059669); }
 .btn-bio.face-ok { background:linear-gradient(135deg,#14532d,#16a34a); cursor:default; }
@@ -313,13 +310,13 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
 ════════════════════════════════════════ */
 
 @media (max-width:560px) {
-  .header       { flex-direction:column; gap:12px; }
-  .clock-block  { text-align:left; }
-  .clock-display{ font-size:30px; }
-  .status-grid  { grid-template-columns:1fr 1fr; }
-  .att-times    { display:none; }
-  .summary-banner { padding:12px 14px; }
-  .face-oval    { width:52%; }
+  .header        { flex-direction:column; gap:12px; }
+  .clock-block   { text-align:left; }
+  .clock-display { font-size:30px; }
+  .status-grid   { grid-template-columns:1fr 1fr; }
+  .att-times     { display:none; }
+  .summary-banner{ padding:12px 14px; }
+  .face-oval     { width:52%; }
 }
 @media (max-width:360px) {
   .status-grid { grid-template-columns:1fr; }
@@ -347,16 +344,16 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
     </div>
     <div class="clock-block">
       <div class="clock-display" id="liveClock">00:00:00</div>
-      <div class="clock-date"    id="liveDate">Loading…</div>
+      <div class="clock-date"    id="liveDate">Loading&hellip;</div>
     </div>
   </div>
 
   <!-- SUMMARY BANNER -->
-  <div class="summary-banner anim-2" id="summaryBanner">
+  <div class="summary-banner anim-2">
     <div class="summary-left">
-      <div class="summary-avatar">👤</div>
+      <div class="summary-avatar">&#128100;</div>
       <div>
-        <div class="summary-name" id="summaryName">Loading…</div>
+        <div class="summary-name" id="summaryName">Loading&hellip;</div>
         <div class="summary-dept" id="summaryDept"></div>
       </div>
     </div>
@@ -366,8 +363,8 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
         <span id="statusPillText">Not Checked In</span>
       </div>
       <div class="att-times" id="attTimes" style="display:none">
-        <span>IN&nbsp;<b id="timeIn">—</b></span>
-        <span>OUT&nbsp;<b id="timeOut">—</b></span>
+        <span>IN&nbsp;<b id="timeIn">&mdash;</b></span>
+        <span>OUT&nbsp;<b id="timeOut">&mdash;</b></span>
       </div>
     </div>
   </div>
@@ -375,14 +372,13 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
   <!-- SYSTEM STATUS -->
   <div class="section anim-2">
     <div class="section-title">System Status</div>
-
     <div class="status-grid">
 
       <div class="status-item">
         <span class="status-label">Internet</span>
         <span class="status-value">
           <span class="dot dim" id="internetDot"></span>
-          <span id="internetStatus" class="text-muted">Checking…</span>
+          <span id="internetStatus" class="text-muted">Checking&hellip;</span>
         </span>
       </div>
 
@@ -390,7 +386,7 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
         <span class="status-label">Camera</span>
         <span class="status-value">
           <span class="dot dim" id="cameraDot"></span>
-          <span id="cameraStatus" class="text-muted">Init…</span>
+          <span id="cameraStatus" class="text-muted">Init&hellip;</span>
         </span>
       </div>
 
@@ -398,34 +394,43 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
         <span class="status-label">Face AI</span>
         <span class="status-value">
           <span class="dot dim" id="faceAiDot"></span>
-          <span id="faceAiStatus" class="text-muted">Loading…</span>
+          <span id="faceAiStatus" class="text-muted">Loading&hellip;</span>
         </span>
       </div>
 
-      <!--
-        Location is full-width so the distance string never clips.
-      -->
-      <div class="status-item full" id="locationStatusItem">
+      <!-- Full-width so distance string never clips on small screens -->
+      <div class="status-item full">
         <div>
           <div class="status-label">Location</div>
-          <div class="geo-sub" id="geoSub">Waiting for GPS fix…</div>
+          <div class="geo-sub" id="geoSub">Waiting for GPS fix&hellip;</div>
         </div>
         <span class="status-value">
           <span class="dot amber" id="gpsDot"></span>
-          <span id="gpsStatus" class="text-amber">Locating…</span>
+          <span id="gpsStatus" class="text-amber">Locating&hellip;</span>
         </span>
       </div>
 
     </div>
 
-    <!-- Shown when user is outside allowed radius -->
+    <!-- Geofence block banner. -->
     <div class="geo-block-banner" id="geoBlockBanner">
-      <span>🚫</span>
-      <div id="geoBlockMsg">You must be at the office to record attendance.</div>
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <span>&#128683;</span>
+        <div id="geoBlockMsg">You must be at the office to record attendance.</div>
+      </div>
+      <div class="ios-location-tip" id="iosLocationTip">
+        &#128241; <strong>iPhone fix:</strong> Settings &rarr; Privacy &amp; Security
+        &rarr; Location Services &rarr; Safari (or Chrome) &rarr; set to
+        <strong>&ldquo;While Using the App&rdquo;</strong>.
+        Then tap <strong>Retry Location</strong> below.
+      </div>
+      <button class="btn-retry-location" id="retryLocationBtn">
+        &#128260; Retry Location
+      </button>
     </div>
 
     <div class="office-info">
-      <span>📍</span>
+      <span>&#128205;</span>
       <div>Plot 641, AB Close, 1st Avenue,<br>Gwarinpa, FCT Abuja.</div>
     </div>
   </div>
@@ -436,22 +441,16 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
 
     <div class="viewfinder">
       <video id="video" autoplay muted playsinline></video>
-
-      <!-- Face oval — colour driven by detection state -->
       <div class="face-oval state-none" id="faceOval">
-        <div class="face-check">✓</div>
+        <div class="face-check">&#10003;</div>
       </div>
-
-      <!-- Real-time face hint pill -->
       <div class="vf-face-status st-none" id="vfFaceStatus">Position face in oval</div>
-
       <div class="vf-corner tl"></div>
       <div class="vf-corner tr"></div>
       <div class="vf-corner bl"></div>
       <div class="vf-corner br"></div>
       <div class="vf-scan"></div>
       <div class="vf-label">LIVE FEED</div>
-
       <div class="vf-unavailable" id="cameraUnavailable">
         <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round"
@@ -459,56 +458,49 @@ video { width:100%; height:100%; object-fit:cover; display:block; }
                M9 9v.253a2.25 2.25 0 001.883 2.217l2.867.574
                a2.25 2.25 0 011.884 2.21V19.5m0 0H7.5
                a2.25 2.25 0 01-2.25-2.25v-5.25m0 0V6.75
-               A2.25 2.25 0 017.5 4.5h1.5" />
+               A2.25 2.25 0 017.5 4.5h1.5"/>
         </svg>
         <p>Camera unavailable</p>
       </div>
     </div>
 
-    <!-- Buttons -->
     <div class="action-grid">
-
       <button class="action-btn btn-bio" id="bioBtn">
-        <span class="btn-icon">👁</span>
+        <span class="btn-icon">&#128065;</span>
         <span class="btn-label">Verify Face</span>
         <span class="btn-spinner"></span>
       </button>
-
       <button class="action-btn btn-checkin" id="checkinBtn" disabled>
-        <span class="btn-icon">✅</span>
+        <span class="btn-icon">&#9989;</span>
         <span class="btn-label">Check In</span>
         <span class="btn-spinner"></span>
       </button>
-
       <button class="action-btn btn-checkout" id="checkoutBtn" disabled>
-        <span class="btn-icon">🚪</span>
+        <span class="btn-icon">&#128682;</span>
         <span class="btn-label">Check Out</span>
         <span class="btn-spinner"></span>
       </button>
-
       <button class="action-btn btn-logout" id="logoutBtn">
-        <span class="btn-icon">↩</span>
+        <span class="btn-icon">&#8617;</span>
         <span class="btn-label">Logout</span>
         <span class="btn-spinner"></span>
       </button>
-
     </div>
 
     <div class="message-box" id="message">
-      <span class="msg-icon">ℹ️</span>
+      <span class="msg-icon">&#8505;&#65039;</span>
       <span id="messageText">System ready. Verify your face and confirm your location to proceed.</span>
     </div>
-
   </div>
 
   <div class="footer anim-4">
-    PEAKNOVA LIMITED &nbsp;•&nbsp; SMART ATTENDANCE SYSTEM &nbsp;•&nbsp;
+    PEAKNOVA LIMITED &nbsp;&bull;&nbsp; SMART ATTENDANCE SYSTEM
   </div>
 
 </div><!-- /container -->
 
 <div class="toast" id="toast" role="status" aria-live="polite">
-  <span id="toastIcon">✓</span>
+  <span id="toastIcon">&#10003;</span>
   <span id="toastText"></span>
 </div>
 
@@ -521,22 +513,51 @@ import {
   startCamera, checkIn, checkOut,
   syncOfflineAttendance
 } from "./js/app.js";
-
-import {
-  doc, onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 // ══════════════════════════════════════════
-// ⚙️  OFFICE GEOFENCE CONFIG
+// OFFICE GEOFENCE CONFIG
+//
+//  Replace lat/lng with your exact office coordinates.
+//  How to get them: open Google Maps on your phone AT the
+//  office entrance → long-press the building → copy the
+//  decimal coordinates shown (e.g. 9.103504, 7.415635).
+//
+//  radiusM: 150 m suits a single building.
+//  Raise to 250 if staff park outside and walk in.
 // ══════════════════════════════════════════
 
 const OFFICE = Object.freeze({
-  lat:     9.103504,   
-  lng:     7.415635,   
-  radiusM: 150,      
+  lat:     9.103504,
+  lng:     7.415635,
+  radiusM: 500,
   label:   "PEAKNOVA Office, Gwarinpa, Abuja",
 });
+
+
+// ══════════════════════════════════════════
+// iOS DETECTION
+//
+//  iPhone/iPad GPS is fundamentally different from Android:
+//   - First position callback fires with a coarse Wi-Fi/cell
+//     fix (accuracy 50–500 m) before any satellite data.
+//   - The real GPS fix arrives 8–20 seconds later.
+//   - Indoor accuracy in concrete buildings: 30–100 m.
+//   - maximumAge must be 0 — iOS caches positions aggressively.
+//  All of this is handled in startGeofence() below.
+// ══════════════════════════════════════════
+
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+// Wait this long for GPS chip to deliver a refined fix before
+// penalising a poor-accuracy reading.
+const GPS_SETTLE_MS = 8000;
+
+// After the settle window, reject fixes with accuracy worse than:
+//   Android: 2× radius  (300 m for a 150 m radius)
+//   iOS:     4× radius  (600 m) — concrete buildings eat GPS
+const ACCURACY_HARD_LIMIT = IS_IOS ? OFFICE.radiusM * 4 : OFFICE.radiusM * 2;
 
 
 // ══════════════════════════════════════════
@@ -544,7 +565,7 @@ const OFFICE = Object.freeze({
 // ══════════════════════════════════════════
 
 if (location.protocol !== "https:" && location.hostname !== "localhost") {
-  console.warn("HTTPS is required — camera and GPS will not function on plain HTTP.");
+  console.warn("HTTPS required — camera and GPS will not work on plain HTTP.");
 }
 
 
@@ -574,26 +595,30 @@ const vfFaceStatus      = $("vfFaceStatus");
 const geoBlockBanner    = $("geoBlockBanner");
 const geoBlockMsg       = $("geoBlockMsg");
 const geoSub            = $("geoSub");
+const iosLocationTip    = $("iosLocationTip");
+const retryLocationBtn  = $("retryLocationBtn");
 
 
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 
-let faceVerified   = false;   // true after face position passes
-let isWithinRadius = false;   // true after GPS confirms office presence
-let currentUser    = null;
-let todayRecord    = null;    // live Firestore attendance doc
-let faceDetector   = null;    // FaceDetector API instance (or null)
-let faceScanTimer  = null;    // setInterval ID
-let gpsWatchId     = null;    // geolocation.watchPosition ID
+let faceVerified    = false;  // true once face position check passes
+let isWithinRadius  = false;  // true once GPS confirms user is at office
+let currentUser     = null;
+let todayRecord     = null;   // live Firestore attendance doc for today
+let faceDetector    = null;   // FaceDetector API instance (or null = use canvas)
+let faceScanTimer   = null;   // setInterval ID for live face scan
+let gpsWatchId      = null;   // geolocation.watchPosition ID
+let _gpsSettleTimer = null;   // setTimeout ID for GPS warm-up window
+let _locationDenied = false;  // true if user denied location permission
 
 
 // ══════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════
 
-/** YYYY-MM-DD in local time — avoids UTC midnight drift */
+/** Returns today as YYYY-MM-DD in LOCAL time (avoids UTC midnight drift) */
 function getToday() {
   const d = new Date();
   return [
@@ -606,19 +631,19 @@ function getToday() {
 function str(v) { return (v == null) ? "" : String(v).trim(); }
 
 function formatTime(ts) {
-  if (!ts || ts._methodName === "serverTimestamp") return "—";
+  if (!ts || ts._methodName === "serverTimestamp") return "\u2014";
   try {
     const d = typeof ts.toDate === "function" ? ts.toDate() : new Date(ts);
-    return isNaN(d.getTime()) ? "—" : d.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit" });
-  } catch { return "—"; }
+    return isNaN(d.getTime()) ? "\u2014" : d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  } catch { return "\u2014"; }
 }
 
 /**
- * Haversine great-circle distance — returns metres.
- * Accurate to ~0.3% for distances under 1000 km.
+ * Haversine formula — returns distance in metres between two lat/lng points.
+ * Accurate to ~0.3% for distances under 1 000 km.
  */
 function haversineDistance(lat1, lng1, lat2, lng2) {
-  const R = 6_371_000;
+  const R   = 6_371_000;
   const rad = v => v * Math.PI / 180;
   const dLat = rad(lat2 - lat1);
   const dLng = rad(lng2 - lng1);
@@ -632,6 +657,7 @@ function formatDistance(m) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(2)} km`;
 }
 
+/** Update a status dot + its label span */
 function setDot(dotId, textId, state, label) {
   $(dotId).className  = `dot ${state}`;
   const t = $(textId);
@@ -639,21 +665,21 @@ function setDot(dotId, textId, state, label) {
   t.textContent = label;
 }
 
-const MSG_ICONS = { success:"✅", error:"❌", info:"ℹ️", warning:"⚠️" };
+const MSG_ICONS = { success: "\u2705", error: "\u274C", info: "\u2139\uFE0F", warning: "\u26A0\uFE0F" };
 
 function showMessage(text, type = "info") {
   messageEl.className = `message-box ${type}`;
-  messageEl.querySelector(".msg-icon").textContent = MSG_ICONS[type] || "ℹ️";
+  messageEl.querySelector(".msg-icon").textContent = MSG_ICONS[type] || "\u2139\uFE0F";
   messageText.textContent = text;
 }
 
 let _toastTimer = null;
 function showToast(text, type = "success") {
   $("toastText").textContent = text;
-  $("toastIcon").textContent = { success:"✓", error:"✕", warning:"⚠", info:"ℹ" }[type] || "ℹ";
+  $("toastIcon").textContent = { success: "\u2713", error: "\u2715", warning: "\u26A0", info: "\u2139" }[type] || "\u2139";
   const t = $("toast");
   t.className = `toast ${type}`;
-  void t.offsetHeight;
+  void t.offsetHeight; // force reflow so CSS transition fires even if already shown
   t.classList.add("show");
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove("show"), 3800);
@@ -668,8 +694,10 @@ function setBtnLoading(btn, loading) {
 // ══════════════════════════════════════════
 // BUTTON STATE ENGINE
 //
-//  BOTH faceVerified AND isWithinRadius
-//  must be true before any attendance action.
+//  Both faceVerified AND isWithinRadius must
+//  be true before Check In or Check Out works.
+//  This is the single source of truth — nothing
+//  else should directly set button.disabled.
 // ══════════════════════════════════════════
 
 function syncButtonStates() {
@@ -680,28 +708,28 @@ function syncButtonStates() {
   checkinBtn.disabled  = !canAct || hasIn;
   checkoutBtn.disabled = !canAct || !hasIn || hasOut;
 
-  // Attendance pill
+  // Summary pill
   if (hasOut) {
-    statusPill.className    = "att-pill checked-out";
+    statusPill.className       = "att-pill checked-out";
     statusPillText.textContent = "Checked Out";
   } else if (hasIn) {
-    statusPill.className    = "att-pill checked-in";
+    statusPill.className       = "att-pill checked-in";
     statusPillText.textContent = "Checked In";
   } else {
-    statusPill.className    = "att-pill not-in";
+    statusPill.className       = "att-pill not-in";
     statusPillText.textContent = "Not Checked In";
   }
 
   attTimes.style.display = hasIn ? "flex" : "none";
   if (hasIn) {
     timeIn.textContent  = formatTime(todayRecord.checkInTime);
-    timeOut.textContent = hasOut ? formatTime(todayRecord.checkOutTime) : "—";
+    timeOut.textContent = hasOut ? formatTime(todayRecord.checkOutTime) : "\u2014";
   }
 }
 
 
 // ══════════════════════════════════════════
-// LIVE ATTENDANCE WATCHER
+// LIVE ATTENDANCE WATCHER (Firestore)
 // ══════════════════════════════════════════
 
 function watchTodayAttendance(userId) {
@@ -714,84 +742,167 @@ function watchTodayAttendance(userId) {
 
 
 // ══════════════════════════════════════════
-// GEOFENCE — GPS LOCATION CHECK
+// GEOFENCE — iOS-AWARE GPS LOCATION CHECK
 // ══════════════════════════════════════════
 
 function startGeofence() {
-  setDot("gpsDot", "gpsStatus", "amber", "Locating…");
-  geoSub.textContent = "Getting GPS fix — please stay still…";
+  setDot("gpsDot", "gpsStatus", "amber", IS_IOS ? "Warming up\u2026" : "Locating\u2026");
+  geoSub.textContent = IS_IOS
+    ? "Getting GPS fix\u2026 iPhone may take 10\u201315 s indoors"
+    : "Getting GPS fix \u2014 please stay still\u2026";
 
   if (!("geolocation" in navigator)) {
     setDot("gpsDot", "gpsStatus", "red", "Unsupported");
     geoSub.textContent = "GPS is not available on this device";
-    applyGeofenceResult(false, null, null);
+    applyGeofenceResult(false, null, null, false);
     return;
   }
 
+  // Clear any previous watch before starting fresh
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+
+  // GPS settle window: during this period we show "Refining..."
+  // and do NOT block the user no matter how poor the accuracy is.
+  clearTimeout(_gpsSettleTimer);
+  _gpsSettleTimer = setTimeout(() => { _gpsSettleTimer = null; }, GPS_SETTLE_MS);
+
   gpsWatchId = navigator.geolocation.watchPosition(
     pos => {
+      _locationDenied = false;
       const { latitude, longitude, accuracy } = pos.coords;
       const dist    = haversineDistance(latitude, longitude, OFFICE.lat, OFFICE.lng);
       const distStr = formatDistance(dist);
+      const accStr  = `\u00B1${Math.round(accuracy)} m`;
 
-      // Reject if accuracy is worse than 2× the allowed radius
-      if (accuracy > OFFICE.radiusM * 2) {
-        setDot("gpsDot", "gpsStatus", "amber", "Weak Signal");
-        geoSub.textContent = `GPS fix ±${Math.round(accuracy)} m — too imprecise, retry`;
-        applyGeofenceResult(false, dist, accuracy);
+      // ── Still in settle window ────────────────────────────
+      // Show "Refining" and wait — the chip hasn't had time to
+      // get a satellite fix yet. Do NOT call applyGeofenceResult.
+      if (_gpsSettleTimer !== null) {
+        setDot("gpsDot", "gpsStatus", "amber", IS_IOS ? "Refining\u2026" : "Locating\u2026");
+        geoSub.textContent = `Getting precise fix\u2026 current accuracy ${accStr}`;
         return;
       }
 
-      const within = dist <= OFFICE.radiusM;
+      // ── Accuracy still too poor after settle window ───────
+      if (accuracy > ACCURACY_HARD_LIMIT) {
+        setDot("gpsDot", "gpsStatus", "amber", "Weak Signal");
+        geoSub.textContent = `GPS signal weak (${accStr}) \u2014 move near a window`;
+
+        // On iOS: still allow if the coarse centre is close enough.
+        // A person inside the building with a 200 m accuracy fix
+        // centred on their true position will satisfy this.
+        const withinCoarse = IS_IOS && (dist <= OFFICE.radiusM + accuracy * 0.5);
+        isWithinRadius = withinCoarse;
+        applyGeofenceResult(withinCoarse, dist, accuracy, false);
+        return;
+      }
+
+      // ── Good precise fix — evaluate normally ──────────────
+      const within  = dist <= OFFICE.radiusM;
       isWithinRadius = within;
 
       if (within) {
-        setDot("gpsDot", "gpsStatus", "green", "At Office ✓");
-        geoSub.textContent = `${distStr} from ${OFFICE.label} · ±${Math.round(accuracy)} m`;
+        setDot("gpsDot", "gpsStatus", "green", "At Office \u2713");
+        geoSub.textContent = `${distStr} from ${OFFICE.label} \u00B7 ${accStr}`;
       } else {
         setDot("gpsDot", "gpsStatus", "red", "Outside Office");
-        geoSub.textContent = `${distStr} from office · attendance blocked`;
+        geoSub.textContent = `${distStr} from office \u2014 attendance blocked`;
       }
 
-      applyGeofenceResult(within, dist, accuracy);
+      applyGeofenceResult(within, dist, accuracy, false);
     },
     err => {
-      const reasons = {
-        [err.PERMISSION_DENIED]:    "Permission denied",
-        [err.POSITION_UNAVAILABLE]: "Signal unavailable",
-        [err.TIMEOUT]:              "GPS timed out",
-      };
-      setDot("gpsDot", "gpsStatus", "red", reasons[err.code] || "GPS error");
-      geoSub.textContent = "Grant location permission and refresh";
+      _locationDenied = (err.code === err.PERMISSION_DENIED);
+      clearTimeout(_gpsSettleTimer);
+      _gpsSettleTimer = null;
+
+      const msg = {
+        [err.PERMISSION_DENIED]:    "Permission denied \u2014 see instructions below",
+        [err.POSITION_UNAVAILABLE]: "Signal unavailable \u2014 move near a window",
+        [err.TIMEOUT]:              "GPS timed out \u2014 tap Retry",
+      }[err.code] || "GPS error \u2014 tap Retry";
+
+      const label = {
+        [err.PERMISSION_DENIED]:    "Denied",
+        [err.POSITION_UNAVAILABLE]: "Unavailable",
+        [err.TIMEOUT]:              "Timed Out",
+      }[err.code] || "Error";
+
+      setDot("gpsDot", "gpsStatus", "red", label);
+      geoSub.textContent = msg;
       isWithinRadius = false;
-      applyGeofenceResult(false, null, null);
+      applyGeofenceResult(false, null, null, _locationDenied);
     },
-    { enableHighAccuracy: true, timeout: 15_000, maximumAge: 30_000 }
+    {
+      enableHighAccuracy: true,
+      timeout:    IS_IOS ? 20_000 : 15_000, // iPhones need longer GPS warm-up
+      maximumAge: 0,                         // CRITICAL: never use a cached fix
+    }
   );
 }
 
-function applyGeofenceResult(isWithin, distM, accuracy) {
+function applyGeofenceResult(isWithin, distM, accuracy, isDenied) {
   if (!isWithin) {
+    // Build a human-readable reason
     let msg = "You must be physically present at the office to record attendance.";
     if (distM !== null) {
-      msg += ` You are ${formatDistance(distM)} away from ${OFFICE.label}.`;
+      msg += ` You are currently ${formatDistance(distM)} away from ${OFFICE.label}.`;
+    }
+    if (accuracy !== null && accuracy > OFFICE.radiusM) {
+      msg += ` GPS accuracy is \u00B1${Math.round(accuracy)} m \u2014 try moving near a window.`;
     }
     geoBlockMsg.textContent = msg;
     geoBlockBanner.classList.add("show");
+
+    // Show iOS Settings tip only when permission was denied on iPhone/iPad
+    if (isDenied && IS_IOS) {
+      iosLocationTip.classList.add("show");
+    } else {
+      iosLocationTip.classList.remove("show");
+    }
+
+    retryLocationBtn.classList.add("show");
   } else {
     geoBlockBanner.classList.remove("show");
+    iosLocationTip.classList.remove("show");
+    retryLocationBtn.classList.remove("show");
   }
+
   syncButtonStates();
 }
+
+// Retry Location button
+// Stops the GPS watch and restarts it fresh.
+// On iOS this also re-triggers the permission prompt
+// if the user just enabled location in Settings.
+retryLocationBtn.addEventListener("click", () => {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+  clearTimeout(_gpsSettleTimer);
+  _gpsSettleTimer = null;
+
+  geoBlockBanner.classList.remove("show");
+  iosLocationTip.classList.remove("show");
+  retryLocationBtn.classList.remove("show");
+
+  setDot("gpsDot", "gpsStatus", "amber", "Retrying\u2026");
+  geoSub.textContent = "Restarting GPS \u2014 please wait\u2026";
+
+  // Small delay so iOS processes any Settings change before we re-request
+  setTimeout(startGeofence, IS_IOS ? 1200 : 400);
+});
 
 
 // ══════════════════════════════════════════
 // FACE DETECTION — INIT
 //
-//  Primary:  browser-native FaceDetector API
-//            (Chrome 70+, Edge 79+)
-//  Fallback: canvas luminance + variance check
-//            (Firefox, Safari, older browsers)
+//  Primary:  native FaceDetector API (Chrome 70+, Edge 79+)
+//  Fallback: canvas brightness + variance heuristic (all browsers)
 // ══════════════════════════════════════════
 
 async function initFaceDetector() {
@@ -800,17 +911,19 @@ async function initFaceDetector() {
       faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
       setDot("faceAiDot", "faceAiStatus", "green", "Native AI");
       return;
-    } catch { /* fall through to canvas */ }
+    } catch { /* fall through */ }
   }
-
-  faceDetector = null; // will use canvas fallback
+  faceDetector = null;
   setDot("faceAiDot", "faceAiStatus", "amber", "Basic Mode");
-  showToast("Use Chrome for full face detection accuracy", "warning");
+  showToast("Use Chrome for best face detection accuracy", "warning");
 }
 
 
 // ══════════════════════════════════════════
 // FACE DETECTION — CONTINUOUS LIVE SCAN
+//
+//  Runs every 800 ms and updates the oval ring colour.
+//  Does NOT set faceVerified — only the button click does.
 // ══════════════════════════════════════════
 
 function startFaceScan() {
@@ -831,56 +944,63 @@ function stopFaceScan() {
 
 // ══════════════════════════════════════════
 // FACE POSITION ASSESSMENT
+//
+//  Returns { ok: boolean, state: string, hint: string }
+//  state: "none" | "adjust" | "good"
 // ══════════════════════════════════════════
 
 async function assessFacePosition() {
 
-  // ── FaceDetector API (native) ─────────────
+  // ── FaceDetector API path ─────────────────────────────────
   if (faceDetector) {
     let faces;
     try { faces = await faceDetector.detect(video); }
-    catch { return { ok:false, state:"none", hint:"Detection error — try again" }; }
+    catch { return { ok: false, state: "none", hint: "Detection error \u2014 try again" }; }
 
     if (!faces || faces.length === 0)
-      return { ok:false, state:"none", hint:"No face detected — look at camera" };
+      return { ok: false, state: "none", hint: "No face detected \u2014 look at camera" };
 
     const box = faces[0].boundingBox;
     const vw  = video.videoWidth  || video.offsetWidth  || 640;
     const vh  = video.videoHeight || video.offsetHeight || 480;
 
-    const cx      = box.x + box.width  / 2;
-    const cy      = box.y + box.height / 2;
-    const offX    = Math.abs(cx - vw / 2) / vw; // 0 = centred, 0.5 = edge
-    const offY    = Math.abs(cy - vh / 2) / vh;
-    const sizeW   = box.width / vw;              // face width as fraction of frame
+    const faceCX = box.x + box.width  / 2;
+    const faceCY = box.y + box.height / 2;
 
-    if (!offX < 0.15 || offX >= 0.15 || offY >= 0.18) {
-      // Tell user which direction to move
-      const xDir = cx < vw / 2 ? "right" : "left";
-      const yDir = cy < vh / 2 ? "down"  : "up";
+    // How far the face centre is from the frame centre, as a fraction 0–0.5
+    const offX  = Math.abs(faceCX - vw / 2) / vw;
+    const offY  = Math.abs(faceCY - vh / 2) / vh;
+    const sizeW = box.width / vw; // face width as fraction of frame width
+
+    // FIX: was `!offX < 0.15 || offX >= 0.15` which always evaluated true
+    // due to boolean coercion (!0.05 === false → false < 0.15 === true).
+    // Correct logic: face is off-centre if EITHER offset exceeds threshold.
+    if (offX >= 0.15 || offY >= 0.18) {
+      const xDir = faceCX < vw / 2 ? "right" : "left";
+      const yDir = faceCY < vh / 2 ? "down"  : "up";
       const hint = offX > offY
         ? `Move face to the ${xDir}`
-        : `Tilt camera ${yDir}`;
-      return { ok:false, state:"adjust", hint };
+        : `Tilt head ${yDir}`;
+      return { ok: false, state: "adjust", hint };
     }
 
-    if (sizeW > 0.65) return { ok:false, state:"adjust", hint:"Move back — you are too close" };
-    if (sizeW < 0.18) return { ok:false, state:"adjust", hint:"Move closer to the camera" };
+    if (sizeW > 0.65) return { ok: false, state: "adjust", hint: "Move back \u2014 you are too close" };
+    if (sizeW < 0.18) return { ok: false, state: "adjust", hint: "Move closer to the camera" };
 
-    return { ok:true, state:"good", hint:"Face positioned well ✓" };
+    return { ok: true, state: "good", hint: "Face positioned well \u2713" };
   }
 
-  // ── Canvas fallback ───────────────────────
-  // Samples the central oval of the current frame.
-  // Checks brightness (not too dark/bright) and
-  // pixel variance (a face has texture; a wall doesn't).
+  // ── Canvas fallback path ──────────────────────────────────
+  // Samples the central oval region of the video frame.
+  // Checks: (a) camera not blocked, (b) enough brightness
+  // variation to suggest a real face is present.
   try {
-    const scale   = 0.5;
-    const cw      = (video.videoWidth  || 320) * scale;
-    const ch      = (video.videoHeight || 240) * scale;
-    const canvas  = document.createElement("canvas");
-    canvas.width  = cw; canvas.height = ch;
-    const ctx = canvas.getContext("2d");
+    const scale  = 0.5;
+    const cw     = (video.videoWidth  || 320) * scale;
+    const ch     = (video.videoHeight || 240) * scale;
+    const canvas = document.createElement("canvas");
+    canvas.width = cw; canvas.height = ch;
+    const ctx    = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, cw, ch);
 
     const cx = cw / 2, cy = ch / 2;
@@ -891,38 +1011,34 @@ async function assessFacePosition() {
 
     for (let x = cx - rw; x <= cx + rw; x += 5) {
       for (let y = cy - rh; y <= cy + rh; y += 5) {
-        // Skip pixels outside the ellipse
-        if (((x - cx) / rw) ** 2 + ((y - cy) / rh) ** 2 > 1) continue;
+        if (((x - cx) / rw) ** 2 + ((y - cy) / rh) ** 2 > 1) continue; // outside ellipse
         const px  = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
         const lum = px[0] * 0.299 + px[1] * 0.587 + px[2] * 0.114;
-        lums.push(lum);
-        sumLum += lum;
-        total++;
+        lums.push(lum); sumLum += lum; total++;
       }
     }
 
-    if (total === 0) return { ok:false, state:"none", hint:"Camera not ready" };
+    if (total === 0) return { ok: false, state: "none", hint: "Camera not ready" };
 
     const avg = sumLum / total;
     let variance = 0;
     for (const l of lums) variance += (l - avg) ** 2;
     variance /= total;
 
-    if (avg < 25)       return { ok:false, state:"none",   hint:"Too dark — improve lighting" };
-    if (avg > 235)      return { ok:false, state:"none",   hint:"Too bright — reduce glare" };
-    if (variance < 110) return { ok:false, state:"adjust", hint:"No face visible — look at camera" };
+    if (avg < 25)       return { ok: false, state: "none",   hint: "Too dark \u2014 improve lighting" };
+    if (avg > 235)      return { ok: false, state: "none",   hint: "Too bright \u2014 reduce glare" };
+    if (variance < 110) return { ok: false, state: "adjust", hint: "No face visible \u2014 look at camera" };
 
-    return { ok:true, state:"good", hint:"Face detected ✓" };
-
+    return { ok: true, state: "good", hint: "Face detected \u2713" };
   } catch {
-    return { ok:false, state:"none", hint:"Canvas error — try again" };
+    return { ok: false, state: "none", hint: "Camera error \u2014 try again" };
   }
 }
 
-/** Apply state to oval ring and status pill */
+/** Update the oval guide ring and status pill inside the viewfinder */
 function applyOvalState(state, hint) {
   faceOval.className = `face-oval state-${state}`;
-  const stClass = { none:"st-none", adjust:"st-adjust", good:"st-good", verified:"st-verified" };
+  const stClass = { none: "st-none", adjust: "st-adjust", good: "st-good", verified: "st-verified" };
   vfFaceStatus.className   = `vf-face-status ${stClass[state] || "st-none"}`;
   vfFaceStatus.textContent = hint;
 }
@@ -930,42 +1046,42 @@ function applyOvalState(state, hint) {
 
 // ══════════════════════════════════════════
 // FACE VERIFICATION — button click
+//
+//  Does one definitive check and sets faceVerified
+//  if the result is good. Gives specific error text
+//  if not so the user knows exactly what to fix.
 // ══════════════════════════════════════════
 
 async function verifyFace() {
   if (faceVerified) return;
   setBtnLoading(bioBtn, true);
-
   try {
-    // Brief pause so camera settles (avoids motion blur on first frame)
+    // Brief pause so camera frame settles (avoids motion-blur on first frame)
     await new Promise(r => setTimeout(r, 350));
 
     const result = await assessFacePosition();
 
     if (result.ok) {
-      // ✅ Good position — mark verified
       faceVerified = true;
       stopFaceScan();
-      applyOvalState("verified", "Identity verified ✓");
+      applyOvalState("verified", "Identity verified \u2713");
 
       bioBtn.classList.add("face-ok");
-      bioBtn.querySelector(".btn-icon").textContent  = "✅";
+      bioBtn.querySelector(".btn-icon").textContent  = "\u2705";
       bioBtn.querySelector(".btn-label").textContent = "Face Verified";
       bioBtn.disabled = true;
 
       syncButtonStates();
 
-      const locationOk = isWithinRadius;
       showMessage(
-        locationOk
-          ? "Face verified ✓ — you may now check in."
-          : "Face verified ✓ — but you are not at the office. Move closer to check in.",
-        locationOk ? "success" : "warning"
+        isWithinRadius
+          ? "Face verified \u2713 \u2014 you may now check in."
+          : "Face verified \u2713 \u2014 but you are not at the office yet. Move closer.",
+        isWithinRadius ? "success" : "warning"
       );
-      showToast("Face verified ✓", "success");
+      showToast("Face verified \u2713", "success");
 
     } else {
-      // ❌ Not well-positioned — tell user exactly what to fix
       applyOvalState(result.state, result.hint);
       showMessage(result.hint, "error");
       showToast(result.hint, "error");
@@ -973,12 +1089,11 @@ async function verifyFace() {
 
   } catch (err) {
     console.error("verifyFace:", err);
-    showMessage("Verification failed — please try again.", "error");
+    showMessage("Verification failed \u2014 please try again.", "error");
   } finally {
     setBtnLoading(bioBtn, false);
-    // Restore button text if verification didn't pass
     if (!faceVerified) {
-      bioBtn.querySelector(".btn-icon").textContent  = "👁";
+      bioBtn.querySelector(".btn-icon").textContent  = "\uD83D\uDC41";
       bioBtn.querySelector(".btn-label").textContent = "Verify Face";
     }
   }
@@ -999,25 +1114,27 @@ protectPage(null, async (user, userData) => {
 
   const userId = str(userData.userId) || user.uid;
 
-  // 1. Start Firestore real-time listener
+  // 1. Start live Firestore attendance listener
   watchTodayAttendance(userId);
 
-  // 2. Init camera
+  // 2. Start camera
   try {
     await startCamera(video);
     setDot("cameraDot", "cameraStatus", "green", "Ready");
   } catch {
     setDot("cameraDot", "cameraStatus", "red", "Unavailable");
     cameraUnavailable.classList.add("show");
-    showMessage("Camera access denied. Allow camera permission and refresh the page.", "error");
+    showMessage("Camera access denied. Allow camera permission and refresh.", "error");
   }
 
-  // 3. Init face detector, then start live scan
+  // 3. Init face detector and start live scan
   await initFaceDetector();
   startFaceScan();
 
-  // 4. Start GPS geofence watch
-  startGeofence();
+  // 4. Start geofence with a short delay.
+  //    The delay ensures we fire inside a user-gesture context on iOS Safari,
+  //    which is required for the location permission prompt to appear.
+  setTimeout(startGeofence, IS_IOS ? 800 : 200);
 
   // 5. Sync any offline records from previous sessions
   syncOfflineAttendance();
@@ -1037,8 +1154,16 @@ function updateInternetStatus() {
 }
 
 updateInternetStatus();
-window.addEventListener("online",  () => { updateInternetStatus(); syncOfflineAttendance(); showToast("Back online — syncing", "success"); });
-window.addEventListener("offline", () => { updateInternetStatus(); showMessage("Offline — check-ins will sync when connection returns.", "warning"); showToast("Offline mode", "warning"); });
+window.addEventListener("online",  () => {
+  updateInternetStatus();
+  syncOfflineAttendance();
+  showToast("Back online \u2014 syncing", "success");
+});
+window.addEventListener("offline", () => {
+  updateInternetStatus();
+  showMessage("Offline \u2014 check-ins will sync when connection returns.", "warning");
+  showToast("Offline mode", "warning");
+});
 
 
 // ══════════════════════════════════════════
@@ -1046,9 +1171,9 @@ window.addEventListener("offline", () => { updateInternetStatus(); showMessage("
 // ══════════════════════════════════════════
 
 checkinBtn.addEventListener("click", async () => {
-  // Runtime double-check (belt + suspenders beyond button state)
-  if (!faceVerified)    { showMessage("Verify your face first.", "warning"); return; }
-  if (!isWithinRadius)  { showMessage("You must be at the office to check in.", "error"); return; }
+  // Belt-and-suspenders runtime guard beyond button disabled state
+  if (!faceVerified)   { showMessage("Verify your face first.", "warning");             return; }
+  if (!isWithinRadius) { showMessage("You must be at the office to check in.", "error"); return; }
 
   setBtnLoading(checkinBtn, true);
   try {
@@ -1058,7 +1183,7 @@ checkinBtn.addEventListener("click", async () => {
     });
     if (result.success) {
       showMessage(result.message || "Checked in successfully!", "success");
-      showToast("Checked in ✓", "success");
+      showToast("Checked in \u2713", "success");
     } else {
       showMessage(result.message || "Check-in failed.", "error");
       showToast("Check-in failed", "error");
@@ -1069,7 +1194,7 @@ checkinBtn.addEventListener("click", async () => {
     showToast(err.message || "Check-in error", "error");
   } finally {
     setBtnLoading(checkinBtn, false);
-    // onSnapshot will call syncButtonStates() automatically
+    // onSnapshot will trigger syncButtonStates() automatically
   }
 });
 
@@ -1079,15 +1204,15 @@ checkinBtn.addEventListener("click", async () => {
 // ══════════════════════════════════════════
 
 checkoutBtn.addEventListener("click", async () => {
-  if (!faceVerified)   { showMessage("Verify your face first.", "warning"); return; }
+  if (!faceVerified)   { showMessage("Verify your face first.", "warning");              return; }
   if (!isWithinRadius) { showMessage("You must be at the office to check out.", "error"); return; }
 
   setBtnLoading(checkoutBtn, true);
   try {
     const result = await checkOut();
     if (result.success) {
-      showMessage(result.message || "Checked out. Have a great day! 👋", "success");
-      showToast("Checked out ✓", "success");
+      showMessage(result.message || "Checked out. Have a great day! \uD83D\uDC4B", "success");
+      showToast("Checked out \u2713", "success");
     } else {
       showMessage(result.message || "Check-out failed.", "error");
       showToast("Check-out failed", "error");
@@ -1124,8 +1249,8 @@ logoutBtn.addEventListener("click", async () => {
 
 function updateClock() {
   const now = new Date();
-  $("liveClock").textContent = now.toLocaleTimeString("en-US", { hour:"2-digit", minute:"2-digit", second:"2-digit" });
-  $("liveDate").textContent  = now.toLocaleDateString("en-US",  { weekday:"short", year:"numeric", month:"short", day:"numeric" }).toUpperCase();
+  $("liveClock").textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  $("liveDate").textContent  = now.toLocaleDateString("en-US",  { weekday: "short", year: "numeric", month: "short", day: "numeric" }).toUpperCase();
 }
 updateClock();
 setInterval(updateClock, 1000);
@@ -1138,7 +1263,7 @@ setInterval(updateClock, 1000);
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try { await navigator.serviceWorker.register("./sw.js"); }
-    catch (err) { console.warn("SW:", err); }
+    catch (err) { console.warn("SW registration failed:", err); }
   });
 }
 
