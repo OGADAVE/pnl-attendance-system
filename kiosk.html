@@ -2,832 +2,384 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>PEAKNOVA — Office Kiosk</title>
 <link rel="manifest" href="./manifest.json" />
-<meta name="theme-color" content="#09090f" />
-<link
-  href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Mono:wght@400;500&family=Barlow:wght@400;500;600&display=swap"
-  rel="stylesheet"
-/>
-
+<meta name="theme-color" content="#05060a" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-
-/* ════════════════════════════════════════
-   DESIGN TOKENS
-════════════════════════════════════════ */
-
-:root {
-  --bg:         #09090f;
-  --surface:    #0e1018;
-  --panel:      #13161f;
-  --panel-hi:   #181c28;
-  --border:     #1e2433;
-  --border-hi:  #2a3347;
-
-  --text:       #eef0f5;
-  --muted:      #5a6278;
-  --dim:        #2d3347;
-
-  --amber:      #f59e0b;
-  --amber-glow: rgba(245,158,11,.15);
-  --amber-dim:  #78350f;
-  --green:      #22c55e;
-  --green-glow: rgba(34,197,94,.12);
-  --green-dim:  #14532d;
-  --blue:       #38bdf8;
-  --blue-dim:   #0c4a6e;
-  --red:        #f87171;
-  --red-dim:    #7f1d1d;
-
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body:    'Barlow', sans-serif;
-  --font-mono:    'DM Mono', monospace;
-
-  --step-size: 32px;
-}
-
-/* ════════════════════════════════════════
-   RESET
-════════════════════════════════════════ */
-
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: var(--font-body);
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Subtle amber glow from top */
-body::before {
-  content: '';
-  position: fixed;
-  top: -120px; left: 50%; transform: translateX(-50%);
-  width: 700px; height: 300px;
-  background: radial-gradient(ellipse, rgba(245,158,11,.07) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Dot grid texture */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px);
-  background-size: 28px 28px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 24px 20px 48px;
-}
-
-/* ════════════════════════════════════════
-   ANIMATIONS
-════════════════════════════════════════ */
-
-@keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-@keyframes scanline { 0% { top:0; } 100% { top:100%; } }
-@keyframes pulse    { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-@keyframes spin     { to { transform: rotate(360deg); } }
-@keyframes pop      { 0%{transform:scale(.94);opacity:0;} 100%{transform:scale(1);opacity:1;} }
-@keyframes countdown-ring {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: 220; }
-}
-
-.anim-1 { animation: fadeUp .45s ease both; }
-.anim-2 { animation: fadeUp .45s .08s ease both; }
-.anim-3 { animation: fadeUp .45s .16s ease both; }
-.anim-4 { animation: fadeUp .45s .24s ease both; }
-
-/* ════════════════════════════════════════
-   HEADER
-════════════════════════════════════════ */
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.brand { display: flex; align-items: center; gap: 14px; }
-
-.logo-wrap { position: relative; flex-shrink: 0; }
-
-.logo {
-  width: 58px; height: 58px;
-  border-radius: 14px;
-  object-fit: cover;
-  border: 2px solid var(--border-hi);
-  display: block;
-}
-
-.logo-accent {
-  position: absolute;
-  inset: -3px;
-  border-radius: 17px;
-  border: 1.5px solid var(--amber);
-  opacity: .25;
-}
-
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  line-height: 1.1;
-}
-
-.brand-sub {
-  margin-top: 4px;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-/* ── Clock ─────────────────────────────── */
-
-.clock-wrap { text-align: right; }
-
-.clock {
-  font-family: var(--font-mono);
-  font-size: 40px;
-  font-weight: 500;
-  color: var(--amber);
-  letter-spacing: 2px;
-  line-height: 1;
-  text-shadow: 0 0 24px rgba(245,158,11,.35);
-}
-
-.clock-date {
-  margin-top: 5px;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  letter-spacing: .5px;
-  text-transform: uppercase;
-}
-
-/* ════════════════════════════════════════
-   STATUS BAR
-════════════════════════════════════════ */
-
-.status-bar {
-  margin-top: 18px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.status-items { display: flex; gap: 20px; flex-wrap: wrap; }
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-}
-
-.status-item b { font-weight: 500; }
-
-.dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot.green  { background: var(--green);  box-shadow: 0 0 5px var(--green); animation: pulse 2s ease-in-out infinite; }
-.dot.amber  { background: var(--amber);  box-shadow: 0 0 5px var(--amber); animation: pulse 1.5s ease-in-out infinite; }
-.dot.red    { background: var(--red); }
-.dot.dim    { background: var(--dim); }
-
-.text-green { color: var(--green); }
-.text-amber { color: var(--amber); }
-.text-red   { color: var(--red);   }
-.text-muted { color: var(--muted); }
-
-/* Time window badge */
-.time-window {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-hi);
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.time-window.open-in   { border-color: var(--green-dim); color: var(--green);  background: var(--green-glow); }
-.time-window.open-late { border-color: var(--amber-dim); color: var(--amber);  background: var(--amber-glow); }
-.time-window.open-out  { border-color: var(--blue-dim);  color: var(--blue);   background: rgba(56,189,248,.08); }
-.time-window.closed    { border-color: var(--red-dim);   color: var(--red);    background: rgba(248,113,113,.06); }
-
-/* ════════════════════════════════════════
-   STEP PROGRESS
-════════════════════════════════════════ */
-
-.steps {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  position: relative;
-}
-
-.step-num {
-  width: var(--step-size);
-  height: var(--step-size);
-  border-radius: 50%;
-  border: 2px solid var(--border-hi);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-family: var(--font-mono);
-  font-weight: 500;
-  color: var(--muted);
-  background: var(--surface);
-  flex-shrink: 0;
-  transition: border-color .3s, color .3s, background .3s, box-shadow .3s;
-}
-
-.step-label {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  transition: color .3s;
-}
-
-.step-line {
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-  margin: 0 8px;
-  transition: background .3s;
-}
-
-/* Active */
-.step.active .step-num {
-  border-color: var(--amber);
-  color: var(--amber);
-  box-shadow: 0 0 12px rgba(245,158,11,.3);
-}
-.step.active .step-label { color: var(--amber); }
-
-/* Done */
-.step.done .step-num {
-  border-color: var(--green);
-  color: var(--green);
-  background: var(--green-dim);
-  box-shadow: 0 0 8px rgba(34,197,94,.2);
-}
-.step.done .step-label { color: var(--green); }
-.step.done + .step-line { background: var(--green-dim); }
-
-/* ════════════════════════════════════════
-   CARDS / SECTIONS
-════════════════════════════════════════ */
-
-.section {
-  margin-top: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 20px;
-}
-
-.section-title {
-  font-size: 11px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 16px;
-}
-
-/* ── Staff ID Input ───────────────────── */
-
-.input-wrap {
-  position: relative;
-}
-
-.input-wrap svg {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 15px 15px 15px 44px;
-  border: 1px solid var(--border-hi);
-  border-radius: 12px;
-  background: var(--panel);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  outline: none;
-  text-transform: uppercase;
-  transition: border-color .2s, box-shadow .2s;
-}
-
-input[type="text"]::placeholder {
-  font-size: 14px;
-  letter-spacing: .5px;
-  color: var(--muted);
-  text-transform: none;
-}
-
-input[type="text"]:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(245,158,11,.1);
-}
-
-/* ── Staff Profile Card ───────────────── */
-
-.staff-card {
-  margin-top: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border-hi);
-  border-radius: 14px;
-  padding: 16px 18px;
-  display: none;
-  animation: pop .25s ease both;
-}
-
-.staff-card.visible { display: block; }
-
-.staff-card-inner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.staff-avatar {
-  width: 52px; height: 52px;
-  border-radius: 12px;
-  background: var(--panel-hi);
-  border: 1px solid var(--border-hi);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.staff-info-name {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: .3px;
-  line-height: 1.1;
-}
-
-.staff-info-email {
-  margin-top: 3px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-}
-
-.staff-info-id {
-  margin-top: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  background: var(--panel-hi);
-  border: 1px solid var(--border-hi);
-  border-radius: 6px;
-  padding: 3px 8px;
-  color: var(--amber);
-}
-
-/* Today's attendance status row */
-.staff-att-status {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.att-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  border: 1px solid transparent;
-}
-
-.att-pill.not-in    { background: rgba(90,98,120,.15);  border-color: var(--border-hi); color: var(--muted);  }
-.att-pill.checked-in{ background: rgba(34,197,94,.1);   border-color: var(--green-dim); color: var(--green);  }
-.att-pill.checked-out{ background: rgba(56,189,248,.1); border-color: var(--blue-dim);  color: var(--blue);   }
-
-.att-pill .dot { animation: none; }
-
-.att-times {
-  font-size: 12px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  display: flex;
-  gap: 12px;
-}
-.att-times b { color: var(--text); }
-
-/* ════════════════════════════════════════
-   CAMERA / VIEWFINDER
-════════════════════════════════════════ */
-
-.viewfinder {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #000;
-  aspect-ratio: 16/9;
-  border: 1px solid var(--border-hi);
-  margin-bottom: 0;
-}
-
-video {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.vf-corner {
-  position: absolute;
-  width: 20px; height: 20px;
-  border-color: var(--amber);
-  border-style: solid;
-  opacity: .65;
-  z-index: 2;
-}
-
-.vf-corner.tl { top:10px;    left:10px;   border-width:2px 0 0 2px; border-radius:4px 0 0 0; }
-.vf-corner.tr { top:10px;    right:10px;  border-width:2px 2px 0 0; border-radius:0 4px 0 0; }
-.vf-corner.bl { bottom:10px; left:10px;   border-width:0 0 2px 2px; border-radius:0 0 0 4px; }
-.vf-corner.br { bottom:10px; right:10px;  border-width:0 2px 2px 0; border-radius:0 0 4px 0; }
-
-.vf-scan {
-  position: absolute;
-  left:0; right:0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
-  opacity: .4;
-  animation: scanline 2.8s linear infinite;
-  z-index: 2;
-}
-
-.vf-label {
-  position: absolute;
-  bottom: 10px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--amber);
-  opacity: .5;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  z-index: 2;
-  white-space: nowrap;
-}
-
-/* Camera unavailable overlay */
-.vf-unavailable {
-  position: absolute; inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: rgba(0,0,0,.7);
-  z-index: 3;
-}
-.vf-unavailable.show { display: flex; }
-.vf-unavailable p { font-size: 13px; color: var(--muted); }
-
-/* ════════════════════════════════════════
-   SELFIE PREVIEW PANEL
-════════════════════════════════════════ */
-
-.selfie-preview-wrap {
-  display: none;
-  margin-top: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border-hi);
-  border-radius: 14px;
-  padding: 14px;
-  animation: pop .25s ease both;
-}
-
-.selfie-preview-wrap.visible { display: block; }
-
-.selfie-preview-label {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--muted);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.selfie-preview-inner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.selfie-img {
-  width: 80px; height: 80px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 2px solid var(--border-hi);
-  flex-shrink: 0;
-}
-
-.selfie-confirm-text {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  flex: 1;
-}
-
-.selfie-btns {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
+:root{
+  --bg:#05060a; --l1:#0a0c12; --l2:#0f1119; --l3:#141720; --l4:#1a1e2a;
+  --border:#1e2333; --bhi:#283044;
+  --text:#edf0f7; --tdim:#8b95aa; --tmuted:#4a5268;
+  --gold:#f0b429; --goldd:#7a5a10; --goldg:rgba(240,180,41,.16); --goldl:#ffd166;
+  --green:#1fd65f; --greend:#0d5a28; --greeng:rgba(31,214,95,.13);
+  --blue:#41c8f5; --blued:#0d4a60;
+  --red:#ff5c6a; --redd:#6b1520;
+  --amber:#ffab40; --amberd:#6b3a10;
+  --fdisp:'Syne',sans-serif; --fmono:'Space Mono',monospace; --fbody:'Barlow',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:var(--fbody);background:var(--bg);color:var(--text);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+.bg-wrap{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-wrap::before{content:'';position:absolute;top:-20%;right:-10%;width:70vw;height:70vw;background:radial-gradient(circle,rgba(240,180,41,.055) 0%,transparent 65%)}
+.bg-wrap::after{content:'';position:absolute;bottom:-15%;left:-10%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(31,214,95,.04) 0%,transparent 65%)}
+.bg-dots{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.026) 1px,transparent 1px);background-size:30px 30px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes scanLine{0%{top:0%}100%{top:100%}}
+@keyframes ovalPulse{0%,100%{box-shadow:0 0 0 0 rgba(240,180,41,.4)}50%{box-shadow:0 0 0 10px rgba(240,180,41,0)}}
+@keyframes checkPop{0%{transform:translateX(-50%) scale(0);opacity:0}75%{transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1);opacity:1}}
+@keyframes ringFill{from{stroke-dashoffset:0}to{stroke-dashoffset:220}}
+@keyframes idleBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes offlinePulse{0%,100%{opacity:1}50%{opacity:.35}}
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .35s ease;overflow:hidden}
+.screen.active{opacity:1;pointer-events:all}
+
+/* ── IDLE ── */
+#idleScreen{align-items:center;justify-content:space-between;cursor:pointer}
+.idle-topbar{width:100%;display:flex;justify-content:space-between;align-items:center;padding:22px 36px;border-bottom:1px solid var(--border);background:rgba(10,12,18,.65);backdrop-filter:blur(14px);flex-shrink:0}
+.idle-brand{display:flex;align-items:center;gap:14px}
+.idle-logo{width:44px;height:44px;border-radius:12px;object-fit:cover;border:2px solid var(--bhi)}
+.idle-bname{font-family:var(--fdisp);font-size:15px;font-weight:700;letter-spacing:.3px;line-height:1.2}
+.idle-bsub{font-family:var(--fmono);font-size:10px;color:var(--tmuted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.idle-datestr{font-family:var(--fmono);font-size:12px;color:var(--tmuted);text-align:right;letter-spacing:.5px}
+.idle-centre{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;animation:idleBob 6s ease-in-out infinite}
+.idle-clock{font-family:var(--fmono);font-size:clamp(68px,13vw,144px);font-weight:700;color:var(--gold);letter-spacing:-2px;line-height:1;text-shadow:0 0 60px rgba(240,180,41,.3),0 0 120px rgba(240,180,41,.1)}
+.idle-sep{animation:pulseDot 1.2s ease-in-out infinite;display:inline-block}
+.idle-hint{margin-top:26px;display:flex;align-items:center;gap:10px;font-family:var(--fdisp);font-size:14px;font-weight:600;color:var(--tmuted);letter-spacing:2px;text-transform:uppercase}
+.idle-hint-icon{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--bhi);display:flex;align-items:center;justify-content:center;font-size:15px;animation:pulseDot 2s ease-in-out infinite}
+.idle-stats{width:100%;border-top:1px solid var(--border);background:rgba(10,12,18,.7);backdrop-filter:blur(14px);padding:18px 36px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:12px}
+.stats-row{display:flex;gap:8px;flex-wrap:wrap}
+.stat-pill{display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;border:1px solid transparent;font-family:var(--fmono);font-size:13px;font-weight:700}
+.stat-pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulseDot 2s ease-in-out infinite}
+.stat-pill.present{background:rgba(31,214,95,.09);border-color:var(--greend);color:var(--green)}
+.stat-pill.late{background:rgba(255,171,64,.09);border-color:var(--amberd);color:var(--amber)}
+.stat-pill.absent{background:rgba(255,92,106,.09);border-color:var(--redd);color:var(--red)}
+.idle-badges{display:flex;gap:8px;align-items:center}
+.badge-offline{display:none;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;background:rgba(255,92,106,.09);border:1px solid var(--redd);font-family:var(--fmono);font-size:11px;color:var(--red);animation:offlinePulse 2s ease-in-out infinite}
+.badge-offline.show{display:flex}
+.badge-sync{display:none;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;background:rgba(240,180,41,.09);border:1px solid var(--goldd);font-family:var(--fmono);font-size:11px;color:var(--gold)}
+.badge-sync.show{display:flex}
+
+/* ── ACTIVE SESSION ── */
+#activeScreen{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.active-inner{width:100%;max-width:780px;margin:0 auto;padding:18px 18px 40px;display:flex;flex-direction:column;gap:13px;min-height:100%}
+.active-hdr{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.a-brand{display:flex;align-items:center;gap:11px}
+.a-logo{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1.5px solid var(--bhi)}
+.a-title{font-family:var(--fdisp);font-size:15px;font-weight:700;line-height:1.1}
+.a-sub{font-family:var(--fmono);font-size:9px;color:var(--tmuted);letter-spacing:1.2px;text-transform:uppercase;margin-top:2px}
+.a-clock{font-family:var(--fmono);font-size:26px;font-weight:700;color:var(--gold);letter-spacing:1px;text-shadow:0 0 18px rgba(240,180,41,.28)}
+.chips-row{display:flex;gap:7px;flex-wrap:wrap;flex-shrink:0}
+.chip{display:flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;border:1px solid var(--bhi);font-family:var(--fmono);font-size:11px;color:var(--tmuted);background:var(--l2)}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:var(--tmuted)}
+.chip.ok{border-color:var(--greend);color:var(--green)}.chip.ok .dot{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulseDot 2s ease-in-out infinite}
+.chip.warn{border-color:var(--amberd);color:var(--amber)}.chip.warn .dot{background:var(--amber);animation:pulseDot 1.5s ease-in-out infinite}
+.chip.bad{border-color:var(--redd);color:var(--red)}.chip.bad .dot{background:var(--red)}
+.chip-offline{background:rgba(255,92,106,.07);border-color:var(--redd);color:var(--red);animation:offlinePulse 2s ease-in-out infinite}
+.chip-sync{background:rgba(240,180,41,.07);border-color:var(--goldd);color:var(--gold)}
+.steps{display:flex;align-items:center;flex-shrink:0}
+.step-item{display:flex;align-items:center;gap:7px;flex:1}
+.step-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bhi);background:var(--l2);display:flex;align-items:center;justify-content:center;font-family:var(--fmono);font-size:11px;font-weight:700;color:var(--tmuted);flex-shrink:0;transition:all .3s}
+.step-lbl{font-family:var(--fmono);font-size:9px;color:var(--tmuted);letter-spacing:1px;text-transform:uppercase;transition:color .3s}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 5px;transition:background .3s}
+.step-item.active .step-num{border-color:var(--gold);color:var(--gold);box-shadow:0 0 10px rgba(240,180,41,.28)}
+.step-item.active .step-lbl{color:var(--gold)}
+.step-item.done .step-num{border-color:var(--green);color:var(--green);background:rgba(31,214,95,.1)}
+.step-item.done .step-lbl{color:var(--green)}
+.step-item.done+.step-line{background:var(--greend)}
+.card{background:var(--l2);border:1px solid var(--border);border-radius:18px;padding:17px;flex-shrink:0}
+.card-ttl{font-family:var(--fmono);font-size:9px;font-weight:700;color:var(--tmuted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:13px}
+.id-row{display:flex;gap:9px;align-items:stretch}
+.id-wrap{flex:1;position:relative}
+.id-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--tmuted);pointer-events:none;width:17px;height:17px}
+.id-input{width:100%;padding:15px 15px 15px 43px;background:var(--l3);border:1.5px solid var(--bhi);border-radius:12px;color:var(--text);font-family:var(--fmono);font-size:19px;font-weight:700;letter-spacing:3px;text-transform:uppercase;outline:none;transition:border-color .2s,box-shadow .2s}
+.id-input::placeholder{font-size:12px;letter-spacing:.5px;color:var(--tmuted);font-weight:400;text-transform:none}
+.id-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(240,180,41,.11)}
+.id-btn{border:none;border-radius:12px;padding:0 20px;background:linear-gradient(135deg,#a06e0a,var(--gold));color:#05060a;font-family:var(--fdisp);font-size:14px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .2s;display:flex;align-items:center;gap:7px;white-space:nowrap;min-height:54px}
+.id-btn:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(240,180,41,.22)}
+.id-btn:active{transform:translateY(0)}
+.id-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.staff-profile{display:none;margin-top:11px;padding:13px;background:var(--l3);border:1px solid var(--bhi);border-radius:14px;animation:fadeUp .25s ease both}
+.staff-profile.show{display:block}
+.sp-inner{display:flex;align-items:center;gap:13px}
+.sp-avatar{width:54px;height:54px;border-radius:13px;background:var(--l4);border:1.5px solid var(--bhi);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.sp-name{font-family:var(--fdisp);font-size:19px;font-weight:700;line-height:1.1}
+.sp-email{font-family:var(--fmono);font-size:10px;color:var(--tmuted);margin-top:2px}
+.sp-id{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:3px 8px;background:var(--l4);border:1px solid var(--bhi);border-radius:6px;font-family:var(--fmono);font-size:10px;color:var(--gold)}
+.sp-att{margin-top:11px;padding-top:11px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px}
+.att-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-family:var(--fmono);font-size:11px;font-weight:700;border:1px solid transparent}
+.att-pill.not-in{background:rgba(74,82,104,.12);border-color:var(--bhi);color:var(--tmuted)}
+.att-pill.in{background:rgba(31,214,95,.09);border-color:var(--greend);color:var(--green)}
+.att-pill.out{background:rgba(65,200,245,.09);border-color:var(--blued);color:var(--blue)}
+.att-times{font-family:var(--fmono);font-size:11px;color:var(--tmuted);display:flex;gap:11px}
+.att-times b{color:var(--text)}
+.viewfinder{position:relative;border-radius:13px;overflow:hidden;background:#000;aspect-ratio:16/9;border:1px solid var(--bhi);margin-bottom:13px}
+video{width:100%;height:100%;object-fit:cover;display:block}
+.vf-corner{position:absolute;border-style:solid;border-color:var(--gold);opacity:.6;z-index:2;width:19px;height:19px}
+.vf-corner.tl{top:9px;left:9px;border-width:2px 0 0 2px;border-radius:4px 0 0 0}
+.vf-corner.tr{top:9px;right:9px;border-width:2px 2px 0 0;border-radius:0 4px 0 0}
+.vf-corner.bl{bottom:9px;left:9px;border-width:0 0 2px 2px;border-radius:0 0 0 4px}
+.vf-corner.br{bottom:9px;right:9px;border-width:0 2px 2px 0;border-radius:0 0 4px 0}
+.vf-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.32;animation:scanLine 3s linear infinite;z-index:2}
+.vf-lbl{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);font-family:var(--fmono);font-size:9px;color:var(--gold);opacity:.48;letter-spacing:2px;z-index:2;text-transform:uppercase;white-space:nowrap}
+.vf-unavail{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(0,0,0,.8);z-index:5}
+.vf-unavail.show{display:flex}
+.vf-unavail svg{color:var(--red);opacity:.7}
+.vf-unavail p{font-size:12px;color:var(--tmuted);font-family:var(--fmono)}
+.face-oval{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38%;aspect-ratio:3/4;border-radius:50%;border:2px solid rgba(255,255,255,.12);z-index:3;pointer-events:none;transition:border-color .3s,box-shadow .3s}
+.face-oval.none{border-color:rgba(255,92,106,.4)}
+.face-oval.adjust{border-color:rgba(255,171,64,.6);box-shadow:0 0 13px rgba(255,171,64,.17)}
+.face-oval.good{border-color:rgba(240,180,41,.8);box-shadow:0 0 18px rgba(240,180,41,.24);animation:ovalPulse 1.8s ease-in-out infinite}
+.face-oval.verified{border-color:var(--gold);box-shadow:0 0 28px rgba(240,180,41,.48);animation:none}
+.face-oval.verified::before{content:'';position:absolute;inset:-1px;border-radius:50%;background:radial-gradient(ellipse,rgba(240,180,41,.07) 0%,transparent 70%)}
+.face-check{position:absolute;bottom:-13px;left:50%;transform:translateX(-50%) scale(0);width:25px;height:25px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;z-index:4}
+.face-oval.verified .face-check{animation:checkPop .4s .1s cubic-bezier(.34,1.56,.64,1) forwards}
+.vf-hint{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-family:var(--fmono);font-size:9px;letter-spacing:.5px;z-index:4;background:rgba(0,0,0,.65);padding:4px 9px;border-radius:999px;white-space:nowrap;color:var(--tmuted);border:1px solid transparent;transition:color .3s,border-color .3s}
+.vf-hint.none{color:var(--red);border-color:rgba(255,92,106,.28)}
+.vf-hint.adjust{color:var(--amber);border-color:rgba(255,171,64,.28)}
+.vf-hint.good{color:var(--gold);border-color:rgba(240,180,41,.28)}
+.vf-hint.verified{color:var(--gold);border-color:rgba(240,180,41,.48);font-weight:700}
+.offline-notice{display:none;padding:10px 13px;background:rgba(255,171,64,.07);border:1px solid var(--amberd);border-radius:10px;font-family:var(--fmono);font-size:11px;color:var(--amber);line-height:1.6;margin-bottom:10px;flex-shrink:0}
+.offline-notice.show{display:block}
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.act-btn{position:relative;border:none;border-radius:13px;height:62px;cursor:pointer;color:white;font-family:var(--fdisp);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;overflow:hidden;transition:transform .15s,box-shadow .2s}
+.act-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.11) 0%,transparent 55%);opacity:0;transition:opacity .2s}
+.act-btn:hover:not(:disabled)::after{opacity:1}
+.act-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 7px 22px rgba(0,0,0,.4)}
+.act-btn:active:not(:disabled){transform:translateY(0)}
+.act-btn:disabled{opacity:.28;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-verify{background:linear-gradient(135deg,#a06e0a,var(--gold));color:#05060a}
+.btn-checkin{background:linear-gradient(135deg,#0d5a28,var(--green))}
+.btn-checkout{background:linear-gradient(135deg,#0d4a60,var(--blue))}
+.btn-reset{grid-column:1/-1;background:transparent;border:1px solid var(--bhi);color:var(--tmuted);font-family:var(--fbody);font-size:13px;font-weight:500;height:42px;letter-spacing:0}
+.btn-reset:hover:not(:disabled){border-color:var(--red);color:var(--red);background:rgba(255,92,106,.05);box-shadow:none}
+.bi{font-size:17px;line-height:1}
+.bspinner{width:17px;height:17px;border:2px solid rgba(255,255,255,.28);border-top-color:white;border-radius:50%;animation:spinSlow .7s linear infinite;display:none}
+.act-btn.loading .bi,.act-btn.loading .bl{display:none}
+.act-btn.loading .bspinner{display:block}
+.msg-box{padding:11px 14px;border-radius:11px;border:1px solid var(--border);background:var(--l3);font-size:13px;line-height:1.6;color:var(--tmuted);min-height:48px;display:flex;align-items:center;gap:9px;transition:border-color .25s,color .25s;flex-shrink:0}
+.msg-box.success{border-color:var(--greend);color:var(--green)}
+.msg-box.error{border-color:var(--redd);color:var(--red)}
+.msg-box.info{border-color:var(--blued);color:var(--blue)}
+.msg-box.warning{border-color:var(--amberd);color:var(--amber)}
+.mi{font-size:14px;flex-shrink:0}
+.btn-back{display:flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--tmuted);font-family:var(--fmono);font-size:11px;cursor:pointer;padding:6px 0;transition:color .2s}
+.btn-back:hover{color:var(--text)}
+
+/* ── RECEIPT ── */
+#receiptOverlay{z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(5,6,10,.97);backdrop-filter:blur(18px);text-align:center;padding:40px 24px}
+.ri{font-size:54px;line-height:1;animation:scaleIn .4s cubic-bezier(.34,1.56,.64,1) both}
+.rname{font-family:var(--fdisp);font-size:clamp(22px,5vw,42px);font-weight:800;margin-top:4px;animation:fadeUp .4s .1s ease both}
+.raction{font-family:var(--fmono);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--tdim);animation:fadeUp .4s .15s ease both}
+.rtime{font-family:var(--fmono);font-size:clamp(30px,7vw,60px);font-weight:700;letter-spacing:-1px;animation:fadeUp .4s .2s ease both}
+.rtime.green{color:var(--green);text-shadow:0 0 40px rgba(31,214,95,.3)}
+.rtime.blue{color:var(--blue);text-shadow:0 0 40px rgba(65,200,245,.28)}
+.ring-wrap{position:relative;width:88px;height:88px;margin-top:2px;animation:fadeIn .4s .3s ease both}
+.ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:5}
+.ring-fill{fill:none;stroke:var(--green);stroke-width:5;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:0}
+.ring-fill.run{animation:ringFill linear forwards}
+.ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--fmono);font-size:25px;font-weight:700;color:var(--green)}
+.rhint{font-family:var(--fmono);font-size:11px;color:var(--tmuted);letter-spacing:.5px;animation:fadeIn .4s .4s ease both}
+.r-offline{padding:8px 16px;background:rgba(255,171,64,.08);border:1px solid var(--amberd);border-radius:8px;font-family:var(--fmono);font-size:11px;color:var(--amber);animation:fadeIn .4s .4s ease both}
+
+/* ── ADMIN ── */
+.admin-trigger{position:fixed;bottom:0;right:0;width:80px;height:80px;z-index:50;cursor:pointer}
+#adminOverlay{z-index:200;align-items:center;justify-content:center;background:rgba(5,6,10,.96);backdrop-filter:blur(22px)}
+.admin-panel{width:100%;max-width:370px;background:var(--l2);border:1px solid var(--bhi);border-radius:24px;padding:30px;animation:scaleIn .3s ease both}
+.ap-title{font-family:var(--fdisp);font-size:19px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:9px}
+.ap-sub{font-size:12px;color:var(--tmuted);margin-bottom:22px;line-height:1.5}
+.pin-dots{display:flex;justify-content:center;gap:11px;margin-bottom:22px}
+.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--bhi);background:transparent;transition:background .15s,border-color .15s}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.pin-key{border:none;border-radius:11px;height:56px;background:var(--l3);border:1px solid var(--bhi);color:var(--text);font-family:var(--fdisp);font-size:21px;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center}
+.pin-key:hover{background:var(--l4)}
+.pin-key:active{transform:scale(.95)}
+.pin-key.clear{font-size:13px;font-family:var(--fmono);border-color:var(--redd);color:var(--red)}
+.pin-key.enter{background:linear-gradient(135deg,#a06e0a,var(--gold));color:#05060a;border:none;font-size:13px}
+.pin-err{font-family:var(--fmono);font-size:11px;color:var(--red);text-align:center;min-height:17px}
+.btn-cancel{width:100%;margin-top:12px;border:none;background:transparent;color:var(--tmuted);font-family:var(--fmono);font-size:11px;cursor:pointer;padding:9px;transition:color .2s}
+.btn-cancel:hover{color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--l3);border:1px solid var(--bhi);border-radius:11px;padding:11px 18px;font-size:13px;font-weight:500;z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:7px;opacity:0;transition:transform .3s ease,opacity .3s ease;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warning{border-left:3px solid var(--amber)}
+.toast.info{border-left:3px solid var(--blue)}
+
+@media(max-width:540px){
+  .idle-clock{font-size:clamp(58px,18vw,96px)}
+  .idle-topbar,.idle-stats{padding:14px 18px}
+  .active-inner{padding:14px 12px 40px}
+  .act-grid{grid-template-columns:1fr}
+  .btn-reset{grid-column:auto}
+  .face-oval{width:50%}
 }
-
-/* ════════════════════════════════════════
-   ACTION BUTTONS
-════════════════════════════════════════ */
-
-.action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.action-btn {
-  position: relative;
-  border: none;
-  border-radius: 12px;
-  height: 64px;
-  cursor: pointer;
-  color: white;
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  overflow: hidden;
-  transition: transform .15s, opacity .15s, box-shadow .2s;
-}
-
-.action-btn::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity .2s;
-}
-
-.action-btn:hover:not(:disabled)::after { opacity: 1; }
-.action-btn:hover:not(:disabled)        { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
-.action-btn:active:not(:disabled)       { transform: translateY(0); }
-.action-btn:disabled                    { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
-
-.btn-icon { font-size: 20px; line-height: 1; }
-.btn-label { font-family: var(--font-display); }
-
-/* Button spinner */
-.btn-spinner {
-  width: 18px; height: 18px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: none;
-}
-
-.action-btn.loading .btn-icon,
-.action-btn.loading .btn-label { display: none; }
-.action-btn.loading .btn-spinner { display: block; }
-
-/* Button themes */
-.btn-lookup   { background: linear-gradient(135deg, #6d28d9, #7c3aed); grid-column: 1 / -1; }
-.btn-bio      { background: linear-gradient(135deg, #0e7490, #0891b2); }
-.btn-checkin  { background: linear-gradient(135deg, #15803d, #22c55e); }
-.btn-checkout { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
-.btn-confirm  { background: linear-gradient(135deg, #15803d, #22c55e); font-size:14px; height:46px; }
-.btn-retake   { background: var(--panel-hi); border:1px solid var(--border-hi); color:var(--muted); font-size:13px; height:46px; flex:1; }
-.btn-reset    {
-  grid-column: 1 / -1;
-  background: transparent;
-  border: 1px solid var(--border-hi);
-  color: var(--muted);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 500;
-  height: 44px;
-  letter-spacing: 0;
-  margin-top: 2px;
-}
-.btn-reset:hover:not(:disabled) {
-  border-color: var(--red);
-  color: var(--red);
-  background: rgba(248,113,113,.06);
-  box-shadow: none;
-}
-
-/* ════════════════════════════════════════
-   MESSAGE BOX
-════════════════════════════════════════ */
-
-.message-box {
-  margin-top: 14px;
-  border-radius: 12px;
-  padding: 13px 16px;
-  font-size: 13.5px;
-  line-height: 1.6;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--muted);
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: border-color .25s, color .25s, background .25s;
-}
-
-.message-box.success { border-color: var(--green-dim); color: var(--green); background: rgba(34,197,94,.05); }
-.message-box.error   { border-color: var(--red-dim);   color: var(--red);   background: rgba(248,113,113,.05); }
-.message-box.info    { border-color: var(--blue-dim);  color: var(--blue);  background: rgba(56,189,248,.05); }
-.message-box.warning { border-color: var(--amber-dim); color: var(--amber); background: rgba(245,158,11,.05); }
-
-.msg-icon { font-size: 16px; flex-shrink: 0; }
-
-/* ════════════════════════════════════════
-   COUNTDOWN RESET OVERLAY
-════════════════════════════════════════ */
-
-.reset-overlay {
-  position: fixed; inset: 0;
-  background: rgba(9,9,15,.92);
-  z-index: 999;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  animation: pop .3s ease both;
-}
-
-.reset-overlay.show { display: flex; }
-
-.reset-icon { font-size: 48px; line-height: 1; }
-
-.reset-msg {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--green);
-  text-align: center;
-  line-height: 1.3;
-}
-
-.reset-sub {
-  font-size: 14px;
-  color: var(--muted);
-  font-family: var(--font-mono);
-}
-
-/* SVG countdown ring */
-.ring-wrap { position: relative; width: 88px; height: 88px; }
-
-.ring-wrap svg {
-  position: absolute; inset: 0;
-  transform: rotate(-90deg);
-}
-
-.ring-bg   { fill: none; stroke: var(--border); stroke-width: 5; }
-.ring-fill {
-  fill: none;
-  stroke: var(--green);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 220;
-  stroke-dashoffset: 0;
-}
-
-.ring-fill.animating {
-  animation: countdown-ring linear forwards;
-}
-
-.ring-num {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 26px;
-  font-weight: 500;
-  color: var(--green);
-}
-
-/* ════════════════════════════════════════
-   FOOTER
-════════════════════════════════════════ */
-
-.footer {
-  text-align: center;
-  margin-top: 32px;
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--dim);
-  letter-spacing: .5px;
-}
-
-/* ════════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════ */
-
-@media (max-width: 600px) {
-  .clock         { font-size: 30px; }
-  .header        { flex-direction: column; gap: 12px; }
-  .clock-wrap    { text-align: left; }
-  .steps         { gap: 4px; }
-  .step-label    { display: none; }
-  .step-line     { margin: 0 4px; }
-  .action-grid   { grid-template-columns: 1fr; }
-  .btn-reset     { grid-column: auto; }
-  .btn-lookup    { grid-column: auto; }
-}
-
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════
-     COUNTDOWN / SUCCESS OVERLAY
-════════════════════════════════════════ -->
-<div class="reset-overlay" id="resetOverlay">
-  <div class="reset-icon" id="resetOverlayIcon">✅</div>
-  <div class="reset-msg"  id="resetOverlayMsg">Check-In Successful!</div>
+<div class="bg-wrap"></div>
+<div class="bg-dots"></div>
+
+<!-- ═══════ IDLE SCREEN ═══════ -->
+<div class="screen active" id="idleScreen">
+  <div class="idle-topbar">
+    <div class="idle-brand">
+      <img src="./images/pln-logo.jpg" alt="Logo" class="idle-logo"/>
+      <div>
+        <div class="idle-bname">PEAKNOVA LIMITED</div>
+        <div class="idle-bsub">Smart Attendance Kiosk</div>
+      </div>
+    </div>
+    <div class="idle-datestr" id="idleDate">Loading...</div>
+  </div>
+
+  <div class="idle-centre">
+    <div class="idle-clock">
+      <span id="idleH">00</span><span class="idle-sep">:</span><span id="idleM">00</span><span class="idle-sep">:</span><span id="idleS">00</span>
+    </div>
+    <div class="idle-hint">
+      <div class="idle-hint-icon">&#128065;</div>
+      Tap anywhere to clock in or out
+    </div>
+  </div>
+
+  <div class="idle-stats">
+    <div class="stats-row">
+      <div class="stat-pill present"><span class="dot"></span><span id="idlePresentN">&#8212;</span>&nbsp;Present</div>
+      <div class="stat-pill late">   <span class="dot"></span><span id="idleLateN">&#8212;</span>&nbsp;Late</div>
+      <div class="stat-pill absent"> <span class="dot"></span><span id="idleAbsentN">&#8212;</span>&nbsp;Absent</div>
+    </div>
+    <div class="idle-badges">
+      <div class="badge-offline" id="idleOfflineBadge">&#9888; Offline</div>
+      <div class="badge-sync"    id="idleSyncBadge">&#9205; <span id="idleSyncN">0</span> pending</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ACTIVE SESSION ═══════ -->
+<div class="screen" id="activeScreen">
+  <div class="active-inner">
+
+    <div class="active-hdr">
+      <div class="a-brand">
+        <img src="./images/pln-logo.jpg" alt="Logo" class="a-logo"/>
+        <div>
+          <div class="a-title">PEAKNOVA LIMITED</div>
+          <div class="a-sub">Attendance Kiosk</div>
+        </div>
+      </div>
+      <div class="a-clock" id="activeClock">00:00</div>
+    </div>
+
+    <div class="chips-row">
+      <div class="chip" id="chipNet"><span class="dot"></span><span id="chipNetTxt">Checking...</span></div>
+      <div class="chip" id="chipCam"><span class="dot"></span><span id="chipCamTxt">Camera...</span></div>
+      <div class="chip" id="chipAI"> <span class="dot"></span><span id="chipAITxt">Face AI...</span></div>
+      <div class="chip chip-offline" id="chipOffline" style="display:none">&#9888; Offline &#8212; saves locally</div>
+      <div class="chip chip-sync"    id="chipSync"    style="display:none">&#9205; <span id="chipSyncN">0</span> queued</div>
+    </div>
+
+    <div class="steps">
+      <div class="step-item active" id="st1"><div class="step-num">1</div><div class="step-lbl">Identify</div></div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step-item" id="st2"><div class="step-num">2</div><div class="step-lbl">Verify</div></div>
+      <div class="step-line" id="sl2"></div>
+      <div class="step-item" id="st3"><div class="step-num">3</div><div class="step-lbl">Action</div></div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="card">
+      <div class="card-ttl">Step 1 &#8212; Enter Staff ID</div>
+      <div class="id-row">
+        <div class="id-wrap">
+          <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 10h.01M8 10h.01M12 14h.01" stroke-linecap="round"/></svg>
+          <input type="text" id="staffIdInput" class="id-input"
+            placeholder="Staff ID  e.g. PNL-001"
+            autocomplete="off" autocorrect="off" spellcheck="false"
+            maxlength="14" inputmode="text"/>
+        </div>
+        <button class="id-btn" id="lookupBtn">
+          <span>Search</span>
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        </button>
+      </div>
+
+      <div class="staff-profile" id="staffProfile">
+        <div class="sp-inner">
+          <div class="sp-avatar">&#128100;</div>
+          <div>
+            <div class="sp-name"  id="spName">&#8212;</div>
+            <div class="sp-email" id="spEmail">&#8212;</div>
+            <div class="sp-id"><span>&#128219;</span><span id="spId">&#8212;</span></div>
+          </div>
+        </div>
+        <div class="sp-att">
+          <div class="att-pill not-in" id="spPill"><span id="spPillTxt">Not Checked In Today</span></div>
+          <div class="att-times" id="spTimes" style="display:none">
+            <span>IN&nbsp;<b id="spTimeIn">&#8212;</b></span>
+            <span>OUT&nbsp;<b id="spTimeOut">&#8212;</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2+3 -->
+    <div class="card">
+      <div class="card-ttl">Step 2 &#8212; Verify Face &amp; Action</div>
+
+      <div class="viewfinder">
+        <video id="video" autoplay muted playsinline></video>
+        <div class="face-oval none" id="faceOval"><div class="face-check">&#10003;</div></div>
+        <div class="vf-hint none" id="vfHint">Position face in oval</div>
+        <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+        <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+        <div class="vf-scan"></div>
+        <div class="vf-lbl">LIVE FEED</div>
+        <div class="vf-unavail" id="camUnavail">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--red);opacity:.7"><path stroke-linecap="round" d="M15.75 10.5l4.72-4.72M19.5 19.5L4.5 4.5"/></svg>
+          <p>Camera unavailable</p>
+        </div>
+      </div>
+
+      <div class="offline-notice" id="offlineNotice">
+        &#127754; Offline &#8212; attendance will be saved locally and synced when internet returns.
+      </div>
+
+      <div class="act-grid">
+        <button class="act-btn btn-verify"   id="verifyBtn"   disabled><span class="bi">&#128065;</span><span class="bl">Verify Face</span><span class="bspinner"></span></button>
+        <button class="act-btn btn-checkin"  id="checkinBtn"  disabled><span class="bi">&#9989;</span><span class="bl">Check In</span><span class="bspinner"></span></button>
+        <button class="act-btn btn-checkout" id="checkoutBtn" disabled><span class="bi">&#128682;</span><span class="bl">Check Out</span><span class="bspinner"></span></button>
+        <button class="act-btn btn-reset"    id="resetBtn">&#8617; Reset Kiosk</button>
+      </div>
+
+      <div class="msg-box" id="msgBox">
+        <span class="mi">&#8505;&#65039;</span>
+        <span id="msgTxt">Waiting for staff identification...</span>
+      </div>
+    </div>
+
+    <button class="btn-back" id="backBtn">&#8592; Back to idle screen</button>
+
+  </div>
+</div>
+
+<!-- ═══════ RECEIPT OVERLAY ═══════ -->
+<div class="screen" id="receiptOverlay">
+  <div class="ri"     id="rIcon">&#9989;</div>
+  <div class="rname"  id="rName">Staff Name</div>
+  <div class="raction"id="rAction">CHECKED IN</div>
+  <div class="rtime green" id="rTime">09:02 AM</div>
   <div class="ring-wrap">
     <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
       <circle class="ring-bg"   cx="40" cy="40" r="35"/>
@@ -835,815 +387,559 @@ video {
     </svg>
     <div class="ring-num" id="ringNum">5</div>
   </div>
-  <div class="reset-sub">Kiosk resets in <span id="resetCountSub">5</span>s</div>
+  <div class="rhint">Kiosk resets in <span id="rCountdown">5</span>s</div>
+  <div class="r-offline" id="rOffline" style="display:none">&#127754; Saved offline &#8212; will sync when internet returns</div>
 </div>
 
-
-<!-- ════════════════════════════════════════
-     MAIN
-════════════════════════════════════════ -->
-<div class="container">
-
-  <!-- HEADER -->
-  <div class="header anim-1">
-    <div class="brand">
-      <div class="logo-wrap">
-        <img src="./images/pln-logo.jpg" alt="PEAKNOVA Logo" class="logo" />
-        <div class="logo-accent"></div>
-      </div>
-      <div>
-        <div class="brand-name">PEAKNOVA LIMITED</div>
-        <div class="brand-sub">Smart Attendance Kiosk</div>
-      </div>
+<!-- ═══════ ADMIN PIN OVERLAY ═══════ -->
+<div class="screen" id="adminOverlay">
+  <div class="admin-panel">
+    <div class="ap-title">&#128274; Admin Override</div>
+    <div class="ap-sub">Enter admin PIN for emergency manual check-in or check-out when camera is unavailable.</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd1"></div><div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div><div class="pin-dot" id="pd4"></div>
+      <div class="pin-dot" id="pd5"></div><div class="pin-dot" id="pd6"></div>
     </div>
-    <div class="clock-wrap">
-      <div class="clock"      id="liveClock">00:00:00</div>
-      <div class="clock-date" id="liveDate">Loading…</div>
+    <div class="pin-pad">
+      <button class="pin-key" data-k="1">1</button><button class="pin-key" data-k="2">2</button><button class="pin-key" data-k="3">3</button>
+      <button class="pin-key" data-k="4">4</button><button class="pin-key" data-k="5">5</button><button class="pin-key" data-k="6">6</button>
+      <button class="pin-key" data-k="7">7</button><button class="pin-key" data-k="8">8</button><button class="pin-key" data-k="9">9</button>
+      <button class="pin-key clear" data-k="clear">Clear</button>
+      <button class="pin-key" data-k="0">0</button>
+      <button class="pin-key enter" data-k="enter">Enter</button>
     </div>
+    <div class="pin-err" id="pinErr"></div>
+    <button class="btn-cancel" id="adminCancel">Cancel</button>
   </div>
+</div>
 
-  <!-- STATUS BAR -->
-  <div class="status-bar anim-2">
-    <div class="status-items">
-
-      <div class="status-item">
-        <span class="dot dim" id="internetDot"></span>
-        <b id="internetStatus" class="text-muted">Checking…</b>
-      </div>
-
-      <div class="status-item">
-        <span class="dot dim" id="cameraDot"></span>
-        <b id="cameraStatus" class="text-muted">Camera…</b>
-      </div>
-
-      <div class="status-item">
-        <span class="dot dim" id="gpsDot"></span>
-        <b id="gpsStatus" class="text-muted">GPS…</b>
-      </div>
-
-    </div>
-    <div class="time-window" id="timeWindowBadge">— —</div>
-  </div>
-
-  <!-- STEP PROGRESS -->
-  <div class="steps anim-2" id="stepsRow">
-    <div class="step active" id="step1">
-      <div class="step-num">1</div>
-      <div class="step-label">Identify</div>
-    </div>
-    <div class="step-line"></div>
-    <div class="step" id="step2">
-      <div class="step-num">2</div>
-      <div class="step-label">Verify</div>
-    </div>
-    <div class="step-line" id="step2Line"></div>
-    <div class="step" id="step3">
-      <div class="step-num">3</div>
-      <div class="step-label">Action</div>
-    </div>
-  </div>
-
-  <!-- ── STEP 1: Staff Lookup ──────────── -->
-  <div class="section anim-3" id="sectionLookup">
-    <div class="section-title">Step 1 — Staff Identification</div>
-
-    <div class="input-wrap">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-        <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 10h.01M8 10h.01M12 14h.01" stroke-linecap="round"/>
-      </svg>
-      <input
-        type="text"
-        id="staffIdInput"
-        placeholder="Enter Staff ID (e.g. PNL-001)"
-        autocomplete="off"
-        autocorrect="off"
-        spellcheck="false"
-        maxlength="12"
-      />
-    </div>
-
-    <div class="action-grid" style="margin-top:12px;">
-      <button class="action-btn btn-lookup" id="lookupBtn">
-        <span class="btn-icon">🔍</span>
-        <span class="btn-label">Find Staff</span>
-        <span class="btn-spinner"></span>
-      </button>
-    </div>
-
-    <!-- Staff profile card -->
-    <div class="staff-card" id="staffCard">
-      <div class="staff-card-inner">
-        <div class="staff-avatar">👤</div>
-        <div>
-          <div class="staff-info-name"  id="staffName">—</div>
-          <div class="staff-info-email" id="staffEmail">—</div>
-          <div class="staff-info-id">   <span>🪪</span><span id="staffIdDisplay">—</span></div>
-        </div>
-      </div>
-
-      <!-- Today's attendance status -->
-      <div class="staff-att-status">
-        <div class="att-pill not-in" id="todayPill">
-          <span class="dot dim" id="todayDot"></span>
-          <span id="todayPillText">Not Checked In Today</span>
-        </div>
-        <div class="att-times" id="todayTimes" style="display:none">
-          <span>IN&nbsp;<b id="todayTimeIn">—</b></span>
-          <span>OUT&nbsp;<b id="todayTimeOut">—</b></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── STEP 2 + 3: Camera + Actions ──── -->
-  <div class="section anim-4" id="sectionCamera">
-    <div class="section-title">Step 2 — Identity Verification &amp; Action</div>
-
-    <!-- Viewfinder -->
-    <div class="viewfinder">
-      <video id="video" autoplay muted playsinline></video>
-      <div class="vf-corner tl"></div>
-      <div class="vf-corner tr"></div>
-      <div class="vf-corner bl"></div>
-      <div class="vf-corner br"></div>
-      <div class="vf-scan"></div>
-      <div class="vf-label">LIVE FEED</div>
-      <div class="vf-unavailable" id="cameraUnavailable">
-        <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--red);opacity:.7">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72M4.5 4.5l15 15M9.75 9.75c0 .414-.168.79-.44 1.06m-1.061 1.06A1.5 1.5 0 009.75 12M9 9l.008-.008M12 12l.008-.008"/>
-        </svg>
-        <p>Camera unavailable — check permissions</p>
-      </div>
-    </div>
-
-    <!-- Selfie preview (shown after capture, before submit) -->
-    <div class="selfie-preview-wrap" id="selfiePreview">
-      <div class="selfie-preview-label">📸 Selfie Captured — Confirm?</div>
-      <div class="selfie-preview-inner">
-        <img class="selfie-img" id="selfieImg" src="" alt="Captured selfie" />
-        <div class="selfie-confirm-text">
-          Make sure your face is clearly visible and well-lit.<br>
-          Tap <strong>Confirm</strong> to submit, or <strong>Retake</strong> to try again.
-        </div>
-      </div>
-      <div class="selfie-btns">
-        <button class="action-btn btn-retake" id="retakeBtn">↩ Retake</button>
-        <button class="action-btn btn-confirm" id="confirmBtn">
-          <span class="btn-label">✓ Confirm &amp; Submit</span>
-          <span class="btn-spinner"></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Action buttons -->
-    <div class="action-grid" id="actionGrid">
-
-      <button class="action-btn btn-bio" id="bioBtn" disabled>
-        <span class="btn-icon">🔐</span>
-        <span class="btn-label">Verify Identity</span>
-        <span class="btn-spinner"></span>
-      </button>
-
-      <button class="action-btn btn-checkin" id="checkinBtn" disabled>
-        <span class="btn-icon">✅</span>
-        <span class="btn-label">Check In</span>
-        <span class="btn-spinner"></span>
-      </button>
-
-      <button class="action-btn btn-checkout" id="checkoutBtn" disabled>
-        <span class="btn-icon">🚪</span>
-        <span class="btn-label">Check Out</span>
-        <span class="btn-spinner"></span>
-      </button>
-
-      <button class="action-btn btn-reset" id="resetBtn">
-        ↩ Reset Kiosk
-      </button>
-
-    </div>
-
-    <!-- Feedback message -->
-    <div class="message-box" id="message">
-      <span class="msg-icon">ℹ️</span>
-      <span id="messageText">Waiting for staff identification…</span>
-    </div>
-
-  </div>
-
-  <div class="footer">
-    PEAKNOVA LIMITED &nbsp;•&nbsp; SMART ATTENDANCE KIOSK &nbsp;•&nbsp; v2.0
-  </div>
-
-</div><!-- /container -->
-
+<div class="admin-trigger" id="adminTrigger"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastIcon">&#10003;</span><span id="toastTxt"></span></div>
 
 <script type="module">
-
 import { db } from "./js/firebase.js";
+import { collection, query, where, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { startCamera, captureImage } from "./js/app.js";
 
-import {
-  collection, query, where,
-  getDocs, doc, getDoc, setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ─── CONFIG ────────────────────────────────
+const ADMIN_PIN          = "123456"; // CHANGE THIS before going live
+const LATE_CUTOFF_MINS   = 510;  // 08:30 — after this = late
+const CHECKIN_CLOSE_MINS = 540;  // 09:00 — check-in closes
+const CHECKOUT_OPEN_MINS = 990;  // 16:30 — check-out opens
+const CHECKOUT_CLOSE_MINS= 1110; // 18:30 — check-out closes
+const RESET_DELAY_SEC    = 5;
+const IDLE_TIMEOUT_MS    = 45000;
 
-import {
-  startCamera, verifyBiometric,
-  captureImage, syncOfflineAttendance
-} from "./js/app.js";
+// ─── INDEXEDDB OFFLINE QUEUE ───────────────
+const IDB_NAME = "peaknova_kiosk", IDB_VER = 1;
+const Q_STORE  = "att_queue", S_STORE = "staff_cache";
+let idb = null;
 
-import { saveOffline, getLocation } from "./js/sync.js";
-
-
-// ══════════════════════════════════════
-// HTTPS GUARD
-// ══════════════════════════════════════
-
-if (location.protocol !== "https:" && location.hostname !== "localhost") {
-  console.warn("HTTPS required for camera and biometric features.");
+async function openIDB() {
+  if (idb) return idb;
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(IDB_NAME, IDB_VER);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(Q_STORE)) d.createObjectStore(Q_STORE, { keyPath:"id", autoIncrement:true });
+      if (!d.objectStoreNames.contains(S_STORE)) d.createObjectStore(S_STORE, { keyPath:"userId" });
+    };
+    r.onsuccess = e => { idb = e.target.result; res(idb); };
+    r.onerror   = () => rej(r.error);
+  });
 }
 
+async function idbPut(store, rec) {
+  const d = await openIDB();
+  return new Promise((res,rej) => { const t=d.transaction(store,"readwrite"),r=t.objectStore(store).put(rec); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+}
 
-// ══════════════════════════════════════
-// DOM REFS
-// ══════════════════════════════════════
+async function idbAll(store) {
+  const d = await openIDB();
+  return new Promise((res,rej) => { const t=d.transaction(store,"readonly"),r=t.objectStore(store).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+}
 
+async function idbDel(store, key) {
+  const d = await openIDB();
+  return new Promise((res,rej) => { const t=d.transaction(store,"readwrite"),r=t.objectStore(store).delete(key); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); });
+}
+
+async function queueRecord(data) { await idbPut(Q_STORE, { ...data, _ts: Date.now() }); updateSyncUI(); }
+
+async function syncQueue() {
+  if (!navigator.onLine) return;
+  const q = await idbAll(Q_STORE);
+  if (!q.length) return;
+  let n = 0;
+  for (const rec of q) {
+    try {
+      const { id:qId, _ts, ...data } = rec;
+      const ref = doc(db, "attendance", data.userId + "_" + data.date);
+      if (data._type === "checkout") await setDoc(ref, { checkOutTime: data.checkOutTime }, { merge:true });
+      else await setDoc(ref, data, { merge:true });
+      await idbDel(Q_STORE, qId); n++;
+    } catch(e) { console.warn("Sync err:", e); }
+  }
+  if (n > 0) { showToast(n + " offline record(s) synced", "success"); updateSyncUI(); }
+}
+
+async function pendingCount() { try { return (await idbAll(Q_STORE)).length; } catch { return 0; } }
+
+async function updateSyncUI() {
+  const n = await pendingCount();
+  const ib = $("idleSyncBadge"), ic = $("idleSyncN");
+  n > 0 ? ib.classList.add("show") : ib.classList.remove("show");
+  if (ic) ic.textContent = n;
+  const ab = $("chipSync"), ac = $("chipSyncN");
+  if (ab) ab.style.display = n > 0 ? "flex" : "none";
+  if (ac) ac.textContent = n;
+}
+
+// ─── STAFF CACHE ───────────────────────────
+async function cacheRoster() {
+  if (!navigator.onLine) return;
+  try {
+    const snap = await getDocs(query(collection(db, "users"), where("role","==","staff")));
+    for (const d of snap.docs) await idbPut(S_STORE, { userId:d.id, ...d.data() });
+  } catch(e) { console.warn("Cache err:", e); }
+}
+
+async function lookupCached(staffId) {
+  const all = await idbAll(S_STORE);
+  return all.find(s => s.staffId === staffId) || null;
+}
+
+// ─── HELPERS ───────────────────────────────
 const $ = id => document.getElementById(id);
 
-const video             = $("video");
-const staffIdInput      = $("staffIdInput");
-const staffCard         = $("staffCard");
-const staffNameEl       = $("staffName");
-const staffEmailEl      = $("staffEmail");
-const staffIdDisplay    = $("staffIdDisplay");
-const todayPill         = $("todayPill");
-const todayPillText     = $("todayPillText");
-const todayDot          = $("todayDot");
-const todayTimes        = $("todayTimes");
-const todayTimeIn       = $("todayTimeIn");
-const todayTimeOut      = $("todayTimeOut");
-const lookupBtn         = $("lookupBtn");
-const bioBtn            = $("bioBtn");
-const checkinBtn        = $("checkinBtn");
-const checkoutBtn       = $("checkoutBtn");
-const resetBtn          = $("resetBtn");
-const selfiePreview     = $("selfiePreview");
-const selfieImg         = $("selfieImg");
-const retakeBtn         = $("retakeBtn");
-const confirmBtn        = $("confirmBtn");
-const cameraUnavailable = $("cameraUnavailable");
-const resetOverlay      = $("resetOverlay");
-
-
-// ══════════════════════════════════════
-// STATE
-// ══════════════════════════════════════
-
-let currentStaff      = null;   // { uid, name, email, staffId, department, ... }
-let biometricVerified = false;
-let currentLocation   = null;
-let todayRecord       = null;   // today's Firestore attendance doc for currentStaff
-let pendingAction     = null;   // "checkin" | "checkout" — action waiting for selfie confirm
-let capturedSelfie    = null;   // base64 data URL
-
-
-// ══════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════
-
-/** Returns today's date as YYYY-MM-DD in LOCAL time (avoids UTC midnight drift) */
 function getToday() {
   const d = new Date();
-  return [
-    d.getFullYear(),
-    String(d.getMonth() + 1).padStart(2, "0"),
-    String(d.getDate()).padStart(2, "0"),
-  ].join("-");
+  return [d.getFullYear(), String(d.getMonth()+1).padStart(2,"0"), String(d.getDate()).padStart(2,"0")].join("-");
 }
 
-function str(v) { return (v === null || v === undefined) ? "" : String(v).trim(); }
+function str(v) { return v == null ? "" : String(v).trim(); }
 
 function formatTime(ts) {
-  if (!ts) return "—";
-  try {
-    const d = ts instanceof Date ? ts : (typeof ts.toDate === "function" ? ts.toDate() : new Date(ts));
-    if (isNaN(d.getTime())) return "—";
-    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-  } catch { return "—"; }
+  if (!ts) return "--";
+  try { const d = ts instanceof Date ? ts : (typeof ts.toDate==="function" ? ts.toDate() : new Date(ts)); return isNaN(d.getTime()) ? "--" : d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}); }
+  catch { return "--"; }
 }
 
-/**
- * Attendance window logic.
- * Returns: "present" | "late" | "checkout" | "closed"
- */
-function getTimeWindow() {
-  const now  = new Date();
-  const mins = now.getHours() * 60 + now.getMinutes();
-  if (mins <= 510) return "present";   // ≤ 08:30 → on time
-  if (mins <= 540) return "late";      // ≤ 09:00 → late
-  if (mins >= 990 && mins <= 1110) return "checkout"; // 16:30–18:30
-  if (mins > 540 && mins < 990)  return "closed";
+function timeWindow() {
+  const m = new Date().getHours()*60 + new Date().getMinutes();
+  if (m <= LATE_CUTOFF_MINS)   return "present";
+  if (m <= CHECKIN_CLOSE_MINS) return "late";
+  if (m >= CHECKOUT_OPEN_MINS && m <= CHECKOUT_CLOSE_MINS) return "checkout";
   return "closed";
 }
 
-function setDot(dotId, textId, state, label) {
-  const dot  = $(dotId);
-  const text = $(textId);
-  dot.className  = `dot ${state}`;
-  text.className = `text-${state === "dim" ? "muted" : state}`;
-  text.textContent = label;
+function setChip(id, txtId, state, label) {
+  const c = $(id), t = $(txtId);
+  if (c) c.className = "chip " + state;
+  if (t) t.textContent = label;
 }
 
-const MSG_ICONS = { success: "✅", error: "❌", info: "ℹ️", warning: "⚠️" };
+const ICONS = { success:"✅", error:"❌", info:"ℹ️", warning:"⚠️" };
 
-function showMessage(text, type = "info") {
-  const box  = $("message");
-  box.className = `message-box ${type}`;
-  box.querySelector(".msg-icon").textContent = MSG_ICONS[type] || "ℹ️";
-  $("messageText").textContent = text;
+function showMsg(text, type) {
+  type = type || "info";
+  const b = $("msgBox"); if (!b) return;
+  b.className = "msg-box " + type;
+  b.querySelector(".mi").textContent = ICONS[type] || "ℹ️";
+  $("msgTxt").textContent = text;
 }
+
+let _tt = null;
+function showToast(text, type) {
+  type = type || "success";
+  const t = $("toast"); if (!t) return;
+  $("toastTxt").textContent = text;
+  $("toastIcon").textContent = {success:"✓",error:"✕",warning:"⚠",info:"ℹ"}[type]||"ℹ";
+  t.className = "toast " + type;
+  void t.offsetHeight; t.classList.add("show");
+  clearTimeout(_tt); _tt = setTimeout(() => t.classList.remove("show"), 3800);
+}
+
+function setBL(btn, on) { on ? btn.classList.add("loading") : btn.classList.remove("loading"); btn.disabled = on; }
 
 function setStep(n) {
-  // n = 1 | 2 | 3
-  for (let i = 1; i <= 3; i++) {
-    const el = $(`step${i}`);
-    el.className = "step" + (i < n ? " done" : i === n ? " active" : "");
+  for (let i=1;i<=3;i++) {
+    const el=$(("st"+i));
+    if(el) el.className = "step-item"+(i<n?" done":i===n?" active":"");
   }
 }
 
-function setBtnLoading(btn, state) {
-  state ? btn.classList.add("loading") : btn.classList.remove("loading");
-  btn.disabled = state;
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const t = $(id); if (t) t.classList.add("active");
 }
 
-/**
- * After staff is found, read their today's attendance record
- * and update the status pill + button enabled states.
- */
-async function loadTodayRecord(uid) {
-  const today = getToday();
+// ─── INTERNET ──────────────────────────────
+function updateNet() {
+  const on = navigator.onLine;
+  const ob = $("idleOfflineBadge");
+  on ? ob.classList.remove("show") : ob.classList.add("show");
+  setChip("chipNet","chipNetTxt", on?"ok":"bad", on?"Online":"Offline");
+  const no = $("offlineNotice"), co = $("chipOffline");
+  if (no) on ? no.classList.remove("show") : no.classList.add("show");
+  if (co) co.style.display = on ? "none" : "flex";
+}
+
+updateNet();
+window.addEventListener("online",  () => { updateNet(); syncQueue(); });
+window.addEventListener("offline", () => { updateNet(); });
+
+// ─── CLOCK ─────────────────────────────────
+function tick() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  const ih=$("idleH"),im=$("idleM"),is=$("idleS");
+  if(ih) ih.textContent = pad(now.getHours());
+  if(im) im.textContent = pad(now.getMinutes());
+  if(is) is.textContent = pad(now.getSeconds());
+  const ac=$("activeClock");
+  if(ac) ac.textContent = now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+  const id=$("idleDate");
+  if(id) id.textContent = now.toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"}).toUpperCase();
+}
+tick(); setInterval(tick,1000);
+
+// ─── TODAY STATS ───────────────────────────
+async function loadStats() {
+  let present=0, late=0, absent=0;
   try {
-    const snap = await getDoc(doc(db, "attendance", `${uid}_${today}`));
-    todayRecord = snap.exists() ? snap.data() : null;
+    const [stSnap,atSnap] = await Promise.all([
+      getDocs(query(collection(db,"users"),where("role","==","staff"))),
+      getDocs(collection(db,"attendance"))
+    ]);
+    const today = getToday();
+    const recs  = atSnap.docs.map(d=>d.data()).filter(d=>d.date===today);
+    present = recs.filter(d=>d.status==="present").length;
+    late    = recs.filter(d=>d.status==="late").length;
+    absent  = Math.max(0, stSnap.docs.length - new Set(recs.map(d=>d.userId)).size);
   } catch {
-    todayRecord = null;
+    const cached = await idbAll(S_STORE);
+    absent = cached.length;
   }
-  syncButtonStates();
-  renderTodayStatus();
+  const pn=$("idlePresentN"),ln=$("idleLateN"),an=$("idleAbsentN");
+  if(pn) pn.textContent=present;
+  if(ln) ln.textContent=late;
+  if(an) an.textContent=absent;
 }
 
-function renderTodayStatus() {
-  const hasIn  = !!todayRecord?.checkInTime;
-  const hasOut = !!todayRecord?.checkOutTime;
+// ─── IDLE / SESSION ────────────────────────
+let idleTimer = null;
 
-  if (hasOut) {
-    todayPill.className    = "att-pill checked-out";
-    todayDot.className     = "dot green";
-    todayPillText.textContent = "Checked Out Today";
-  } else if (hasIn) {
-    todayPill.className    = "att-pill checked-in";
-    todayDot.className     = "dot green";
-    todayPillText.textContent = "Checked In Today";
+function goIdle() {
+  resetSession();
+  showScreen("idleScreen");
+  loadStats();
+  updateSyncUI();
+}
+
+function resetIdleTimer() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(goIdle, IDLE_TIMEOUT_MS);
+}
+
+$("idleScreen").addEventListener("click", activateSession);
+document.addEventListener("keydown", e => {
+  if ($("idleScreen").classList.contains("active")) activateSession();
+  else resetIdleTimer();
+});
+
+function activateSession() {
+  showScreen("activeScreen");
+  resetIdleTimer();
+  setTimeout(() => { const i=$("staffIdInput"); if(i) i.focus(); }, 100);
+}
+
+// ─── CAMERA + FACE ─────────────────────────
+const video = $("video");
+let faceDetector = null, faceScanTimer = null;
+
+async function initCamera() {
+  try { await startCamera(video); setChip("chipCam","chipCamTxt","ok","Camera Ready"); }
+  catch { setChip("chipCam","chipCamTxt","bad","No Camera"); const u=$("camUnavail"); if(u) u.classList.add("show"); }
+}
+
+async function initFaceAI() {
+  if ("FaceDetector" in window) {
+    try { faceDetector = new FaceDetector({fastMode:true,maxDetectedFaces:1}); setChip("chipAI","chipAITxt","ok","Face AI: Native"); return; }
+    catch {}
+  }
+  faceDetector = null;
+  setChip("chipAI","chipAITxt","warn","Face AI: Basic");
+}
+
+function startScan() {
+  if (faceScanTimer) clearInterval(faceScanTimer);
+  faceScanTimer = setInterval(async () => {
+    if (faceVerified || !video || video.readyState < 2) return;
+    const r = await assessFace();
+    applyOval(r.state, r.hint);
+  }, 800);
+}
+
+function stopScan() { clearInterval(faceScanTimer); faceScanTimer = null; }
+
+async function assessFace() {
+  if (faceDetector) {
+    let faces;
+    try { faces = await faceDetector.detect(video); } catch { return {ok:false,state:"none",hint:"Detection error"}; }
+    if (!faces||!faces.length) return {ok:false,state:"none",hint:"No face detected \u2014 look at camera"};
+    const box=faces[0].boundingBox, vw=video.videoWidth||640, vh=video.videoHeight||480;
+    const cx=box.x+box.width/2, cy=box.y+box.height/2;
+    const offX=Math.abs(cx-vw/2)/vw, offY=Math.abs(cy-vh/2)/vh, sw=box.width/vw;
+    if (offX>=0.15||offY>=0.18) { const xd=cx<vw/2?"right":"left",yd=cy<vh/2?"down":"up"; return {ok:false,state:"adjust",hint:offX>offY?"Move face "+xd:"Tilt "+yd}; }
+    if (sw>0.65) return {ok:false,state:"adjust",hint:"Move back \u2014 too close"};
+    if (sw<0.18) return {ok:false,state:"adjust",hint:"Move closer"};
+    return {ok:true,state:"good",hint:"Face positioned well"};
+  }
+  // Canvas fallback
+  try {
+    const sc=0.5, cw=(video.videoWidth||320)*sc, ch=(video.videoHeight||240)*sc;
+    const cv=document.createElement("canvas"); cv.width=cw; cv.height=ch;
+    const ctx=cv.getContext("2d"); ctx.drawImage(video,0,0,cw,ch);
+    const ocx=cw/2,ocy=ch/2,rw=cw*.22,rh=ch*.35;
+    let total=0,sum=0; const lums=[];
+    for(let x=ocx-rw;x<=ocx+rw;x+=5) for(let y=ocy-rh;y<=ocy+rh;y+=5) {
+      if(((x-ocx)/rw)**2+((y-ocy)/rh)**2>1) continue;
+      const px=ctx.getImageData(Math.round(x),Math.round(y),1,1).data;
+      const l=px[0]*.299+px[1]*.587+px[2]*.114; lums.push(l); sum+=l; total++;
+    }
+    if(!total) return {ok:false,state:"none",hint:"Camera not ready"};
+    const avg=sum/total; let v=0; for(const l of lums) v+=(l-avg)**2; v/=total;
+    if(avg<25) return {ok:false,state:"none",hint:"Too dark \u2014 improve lighting"};
+    if(avg>235) return {ok:false,state:"none",hint:"Too bright \u2014 reduce glare"};
+    if(v<110) return {ok:false,state:"adjust",hint:"No face visible \u2014 look at camera"};
+    return {ok:true,state:"good",hint:"Face detected"};
+  } catch { return {ok:false,state:"none",hint:"Error \u2014 try again"}; }
+}
+
+function applyOval(state, hint) {
+  const o=$("faceOval"), h=$("vfHint");
+  if(o) o.className="face-oval "+state;
+  if(h) { h.className="vf-hint "+state; h.textContent=hint; }
+}
+
+// ─── SESSION STATE ─────────────────────────
+let currentStaff=null, faceVerified=false, todayRecord=null;
+
+function resetSession() {
+  currentStaff=null; faceVerified=false; todayRecord=null;
+  stopScan();
+  const si=$("staffIdInput"); if(si) si.value="";
+  const sp=$("staffProfile"); if(sp) sp.classList.remove("show");
+  applyOval("none","Position face in oval");
+  const vb=$("verifyBtn");
+  if(vb) { vb.disabled=true; vb.classList.remove("loading"); vb.querySelector(".bi").textContent="\u{1F441}"; vb.querySelector(".bl").textContent="Verify Face"; }
+  const ci=$("checkinBtn"),co=$("checkoutBtn");
+  if(ci) ci.disabled=true;
+  if(co) co.disabled=true;
+  setStep(1);
+  showMsg("Waiting for staff identification...","info");
+}
+
+function syncBtns() {
+  if (!currentStaff||!faceVerified) return;
+  const hasIn=!!todayRecord?.checkInTime, hasOut=!!todayRecord?.checkOutTime, win=timeWindow();
+  const ci=$("checkinBtn"),co=$("checkoutBtn");
+  if(ci) ci.disabled = hasIn||(win!=="present"&&win!=="late");
+  if(co) co.disabled = !hasIn||hasOut||win!=="checkout";
+}
+
+// ─── LOOKUP ────────────────────────────────
+async function doLookup() {
+  const id = ($("staffIdInput").value||"").trim().toUpperCase();
+  if (!id) { showMsg("Please enter a Staff ID.","warning"); return; }
+  const btn=$("lookupBtn"); btn.disabled=true;
+  btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spinSlow .7s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg>';
+  try {
+    let staff=null;
+    if (navigator.onLine) {
+      try { const s=await getDocs(query(collection(db,"users"),where("staffId","==",id))); if(!s.empty) staff={uid:s.docs[0].id,...s.docs[0].data()}; } catch {}
+    }
+    if (!staff) { const c=await lookupCached(id); if(c) staff={...c,uid:c.userId}; }
+    if (!staff) { showMsg('No staff found with ID "'+id+'".','error'); return; }
+    currentStaff=staff;
+    const sn=$("spName"),se=$("spEmail"),si=$("spId"),sp=$("staffProfile");
+    if(sn) sn.textContent=str(staff.name)||"--";
+    if(se) se.textContent=str(staff.email)||"--";
+    if(si) si.textContent=str(staff.staffId)||id;
+    if(sp) sp.classList.add("show");
+    await loadTodayRec(staff.uid);
+    const vb=$("verifyBtn"); if(vb) vb.disabled=false;
+    setStep(2);
+    showMsg("Staff found. Verify face to proceed.","info");
+    startScan();
+  } catch(e) { console.error(e); showMsg(e.message||"Lookup failed.","error"); }
+  finally {
+    btn.disabled=false;
+    btn.innerHTML='<span>Search</span><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>';
+    resetIdleTimer();
+  }
+}
+
+$("lookupBtn").addEventListener("click", doLookup);
+$("staffIdInput").addEventListener("keydown", e => { if(e.key==="Enter") doLookup(); resetIdleTimer(); });
+
+async function loadTodayRec(uid) {
+  todayRecord=null;
+  try { if(navigator.onLine) { const s=await getDoc(doc(db,"attendance",uid+"_"+getToday())); todayRecord=s.exists()?s.data():null; } }
+  catch {}
+  renderAttStatus(); syncBtns();
+}
+
+function renderAttStatus() {
+  const hasIn=!!todayRecord?.checkInTime, hasOut=!!todayRecord?.checkOutTime;
+  const pill=$("spPill"),txt=$("spPillTxt"),times=$("spTimes");
+  if(hasOut) { if(pill) pill.className="att-pill out"; if(txt) txt.textContent="Checked Out Today"; }
+  else if(hasIn) { if(pill) pill.className="att-pill in"; if(txt) txt.textContent="Checked In Today"; }
+  else { if(pill) pill.className="att-pill not-in"; if(txt) txt.textContent="Not Checked In Today"; }
+  if(times) times.style.display=hasIn?"flex":"none";
+  if(hasIn) {
+    const ti=$("spTimeIn"),to=$("spTimeOut");
+    if(ti) ti.textContent=formatTime(todayRecord.checkInTime);
+    if(to) to.textContent=hasOut?formatTime(todayRecord.checkOutTime):"--";
+  }
+}
+
+// ─── VERIFY ────────────────────────────────
+$("verifyBtn").addEventListener("click", async () => {
+  if (faceVerified) return;
+  const btn=$("verifyBtn"); setBL(btn,true);
+  try {
+    await new Promise(r=>setTimeout(r,350));
+    const res=await assessFace();
+    if (res.ok) {
+      faceVerified=true; stopScan(); applyOval("verified","Identity verified");
+      btn.querySelector(".bi").textContent="\u2705";
+      btn.querySelector(".bl").textContent="Verified";
+      btn.classList.remove("loading"); btn.disabled=true;
+      setStep(3); syncBtns();
+      showMsg("Face verified. Select an action below.","success");
+      showToast("Identity verified","success");
+    } else {
+      applyOval(res.state,res.hint); showMsg(res.hint,"error"); showToast(res.hint,"error");
+    }
+  } catch(e) { console.error(e); showMsg("Verification error \u2014 try again.","error"); }
+  finally { if(!faceVerified) { btn.classList.remove("loading"); btn.disabled=false; } resetIdleTimer(); }
+});
+
+// ─── CHECK IN ──────────────────────────────
+$("checkinBtn").addEventListener("click", async () => {
+  if (!currentStaff||!faceVerified) return;
+  const win=timeWindow();
+  if (win!=="present"&&win!=="late") { showMsg("Check-in window is closed.","error"); return; }
+  const btn=$("checkinBtn"); setBL(btn,true);
+  try {
+    const today=getToday(), selfie=captureImage(video)||"", checkInTime=new Date().toISOString();
+    const data={ userId:currentStaff.uid, name:str(currentStaff.name), email:str(currentStaff.email), staffId:str(currentStaff.staffId), department:str(currentStaff.department), date:today, checkInTime, method:"kiosk", status:win, selfieUrl:selfie, biometricVerified:true, offline:!navigator.onLine };
+    if (navigator.onLine) await setDoc(doc(db,"attendance",currentStaff.uid+"_"+today),data,{merge:true});
+    else await queueRecord(data);
+    showReceipt({ icon:win==="late"?"⏰":"✅", name:str(currentStaff.name), action:win==="late"?"CHECKED IN — LATE":"CHECKED IN", time:formatTime(checkInTime), green:true, offline:!navigator.onLine });
+  } catch(e) { console.error(e); showMsg(e.message||"Check-in failed.","error"); setBL(btn,false); }
+  resetIdleTimer();
+});
+
+// ─── CHECK OUT ─────────────────────────────
+$("checkoutBtn").addEventListener("click", async () => {
+  if (!currentStaff||!faceVerified) return;
+  const btn=$("checkoutBtn"); setBL(btn,true);
+  try {
+    const today=getToday(), checkOutTime=new Date().toISOString();
+    if (navigator.onLine) {
+      const s=await getDoc(doc(db,"attendance",currentStaff.uid+"_"+today));
+      if (!s.exists()||!s.data().checkInTime) throw new Error("No check-in record found for today.");
+      await setDoc(doc(db,"attendance",currentStaff.uid+"_"+today),{checkOutTime},{merge:true});
+    } else {
+      await queueRecord({userId:currentStaff.uid,date:today,checkOutTime,_type:"checkout"});
+    }
+    showReceipt({ icon:"🚪", name:str(currentStaff.name), action:"CHECKED OUT", time:formatTime(checkOutTime), green:false, offline:!navigator.onLine });
+  } catch(e) { console.error(e); showMsg(e.message||"Check-out failed.","error"); setBL(btn,false); }
+  resetIdleTimer();
+});
+
+// ─── RECEIPT ───────────────────────────────
+let receiptIv=null;
+function showReceipt({icon,name,action,time,green,offline}) {
+  $("rIcon").textContent=icon; $("rName").textContent=name;
+  $("rAction").textContent=action; $("rTime").textContent=time;
+  $("rTime").className="rtime "+(green?"green":"blue");
+  const ro=$("rOffline"); if(ro) ro.style.display=offline?"block":"none";
+  const rf=$("ringFill");
+  rf.style.animationDuration=RESET_DELAY_SEC+"s";
+  rf.classList.remove("run"); void rf.offsetHeight; rf.classList.add("run");
+  let c=RESET_DELAY_SEC;
+  $("ringNum").textContent=c; $("rCountdown").textContent=c;
+  clearInterval(receiptIv);
+  receiptIv=setInterval(()=>{
+    c--; $("ringNum").textContent=c; $("rCountdown").textContent=c;
+    if(c<=0){ clearInterval(receiptIv); rf.classList.remove("run"); goIdle(); }
+  },1000);
+  showScreen("receiptOverlay");
+}
+
+$("resetBtn").addEventListener("click", goIdle);
+$("backBtn").addEventListener("click",  goIdle);
+
+// ─── ADMIN PIN ─────────────────────────────
+let pinVal="", adminTaps=0, adminTapTmr=null;
+
+$("adminTrigger").addEventListener("click",()=>{
+  adminTaps++; clearTimeout(adminTapTmr);
+  adminTapTmr=setTimeout(()=>{adminTaps=0;},700);
+  if(adminTaps>=3){ adminTaps=0; pinVal=""; updateDots(); $("pinErr").textContent=""; showScreen("adminOverlay"); }
+});
+
+$("adminCancel").addEventListener("click",()=>{ pinVal=""; updateDots(); showScreen("activeScreen"); });
+
+document.querySelectorAll(".pin-key").forEach(k=>{
+  k.addEventListener("click",()=>{
+    const v=k.dataset.k;
+    if(v==="clear") pinVal="";
+    else if(v==="enter"){ checkPin(); return; }
+    else if(pinVal.length<6) pinVal+=v;
+    updateDots();
+  });
+});
+
+function updateDots() {
+  for(let i=1;i<=6;i++){ const d=$("pd"+i); if(d) d.className="pin-dot"+(i<=pinVal.length?" filled":""); }
+}
+
+function checkPin() {
+  if(pinVal===ADMIN_PIN){
+    $("pinErr").textContent=""; pinVal=""; updateDots();
+    faceVerified=true; applyOval("verified","Admin override active");
+    setStep(3); syncBtns();
+    showMsg("Admin override active. Select action.","warning");
+    showToast("Admin mode active","warning");
+    showScreen("activeScreen");
   } else {
-    todayPill.className    = "att-pill not-in";
-    todayDot.className     = "dot dim";
-    todayPillText.textContent = "Not Checked In Today";
-  }
-
-  if (hasIn) {
-    todayTimes.style.display  = "flex";
-    todayTimeIn.textContent   = formatTime(todayRecord.checkInTime);
-    todayTimeOut.textContent  = hasOut ? formatTime(todayRecord.checkOutTime) : "—";
-  } else {
-    todayTimes.style.display  = "none";
+    $("pinErr").textContent="Incorrect PIN. Try again.";
+    pinVal=""; updateDots();
   }
 }
 
-function syncButtonStates() {
-  if (!currentStaff) {
-    bioBtn.disabled = checkinBtn.disabled = checkoutBtn.disabled = true;
-    return;
-  }
-
-  const hasIn    = !!todayRecord?.checkInTime;
-  const hasOut   = !!todayRecord?.checkOutTime;
-  const window_  = getTimeWindow();
-
-  // Bio: always enabled once staff found
-  bioBtn.disabled = false;
-
-  // Check In: needs bio + no existing record + window open for check-in
-  const inWindowOk = window_ === "present" || window_ === "late";
-  checkinBtn.disabled = !biometricVerified || hasIn || !inWindowOk;
-
-  // Check Out: needs bio + checked in + not yet out + checkout window
-  checkoutBtn.disabled = !biometricVerified || !hasIn || hasOut || window_ !== "checkout";
-}
-
-
-// ══════════════════════════════════════
-// TIME WINDOW BADGE
-// ══════════════════════════════════════
-
-function updateTimeWindowBadge() {
-  const badge   = $("timeWindowBadge");
-  const window_ = getTimeWindow();
-  const map = {
-    present:  ["open-in",   "🟢 Check-In Open"],
-    late:     ["open-late", "🟡 Late Check-In"],
-    checkout: ["open-out",  "🔵 Check-Out Open"],
-    closed:   ["closed",    "🔴 Window Closed"],
-  };
-  const [cls, label] = map[window_] || ["closed", "—"];
-  badge.className   = `time-window ${cls}`;
-  badge.textContent = label;
-
-  // Also re-evaluate button states every minute
-  if (currentStaff) syncButtonStates();
-}
-
-updateTimeWindowBadge();
-setInterval(updateTimeWindowBadge, 30_000);
-
-
-// ══════════════════════════════════════
-// INITIALIZATION (parallel)
-// ══════════════════════════════════════
-
-(async () => {
-
-  // Run camera + GPS in parallel — one failing doesn't block the other
-  const [cameraResult, gpsResult] = await Promise.allSettled([
-
-    startCamera(video).then(() => {
-      setDot("cameraDot", "cameraStatus", "green", "Camera Ready");
-    }),
-
-    getLocation().then(loc => {
-      currentLocation = loc;
-      setDot("gpsDot", "gpsStatus", "green", "GPS Active");
-    })
-
-  ]);
-
-  if (cameraResult.status === "rejected") {
-    setDot("cameraDot", "cameraStatus", "red", "Unavailable");
-    cameraUnavailable.classList.add("show");
-    showMessage("Camera access denied. Allow camera permissions to use this kiosk.", "error");
-  }
-
-  if (gpsResult.status === "rejected") {
-    setDot("gpsDot", "gpsStatus", "amber", "Denied");
-  }
-
-  // Initial offline sync
-  syncOfflineAttendance();
-
+// ─── STARTUP ───────────────────────────────
+(async()=>{
+  await openIDB();
+  await Promise.all([initCamera(), initFaceAI()]);
+  await cacheRoster();
+  await loadStats();
+  await updateSyncUI();
+  await syncQueue();
+  showScreen("idleScreen");
+  setInterval(()=>{ if(navigator.onLine) cacheRoster(); }, 300000);
+  setInterval(syncQueue, 60000);
 })();
 
-
-// ══════════════════════════════════════
-// INTERNET STATUS
-// ══════════════════════════════════════
-
-function updateInternet() {
-  if (navigator.onLine) {
-    setDot("internetDot", "internetStatus", "green", "Online");
-  } else {
-    setDot("internetDot", "internetStatus", "red", "Offline");
-  }
+if("serviceWorker" in navigator){
+  window.addEventListener("load", async()=>{ try{ await navigator.serviceWorker.register("./sw.js"); }catch(e){console.warn("SW:",e);} });
 }
-
-updateInternet();
-window.addEventListener("online",  () => { updateInternet(); syncOfflineAttendance(); });
-window.addEventListener("offline", () => { updateInternet(); });
-
-
-// ══════════════════════════════════════
-// STAFF LOOKUP
-// ══════════════════════════════════════
-
-async function doLookup() {
-  const id = staffIdInput.value.trim().toUpperCase();
-  if (!id) {
-    showMessage("Please enter a Staff ID.", "warning");
-    return;
-  }
-
-  setBtnLoading(lookupBtn, true);
-
-  try {
-    const q    = query(collection(db, "users"), where("staffId", "==", id));
-    const snap = await getDocs(q);
-
-    if (snap.empty) {
-      showMessage(`No staff found with ID "${id}". Check the ID and try again.`, "error");
-      return;
-    }
-
-    const docSnap = snap.docs[0];
-    currentStaff  = { uid: docSnap.id, ...docSnap.data() };
-
-    // Populate card
-    staffNameEl.textContent    = str(currentStaff.name)     || "—";
-    staffEmailEl.textContent   = str(currentStaff.email)    || "—";
-    staffIdDisplay.textContent = str(currentStaff.staffId)  || id;
-
-    staffCard.classList.add("visible");
-
-    // Load today's record + update buttons
-    await loadTodayRecord(currentStaff.uid);
-
-    setStep(2);
-    showMessage(`Welcome, ${str(currentStaff.name) || "Staff"}. Please verify your identity.`, "info");
-
-  } catch (err) {
-    console.error("Lookup error:", err);
-    showMessage(err.message || "Lookup failed. Please try again.", "error");
-  } finally {
-    setBtnLoading(lookupBtn, false);
-  }
-}
-
-lookupBtn.addEventListener("click", doLookup);
-
-staffIdInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") doLookup();
-});
-
-
-// ══════════════════════════════════════
-// BIOMETRIC VERIFY
-// ══════════════════════════════════════
-
-bioBtn.addEventListener("click", async () => {
-  setBtnLoading(bioBtn, true);
-  try {
-    if (!window.PublicKeyCredential) {
-      throw new Error("Biometric authentication is not supported on this device.");
-    }
-    const result = await verifyBiometric();
-    biometricVerified = true;
-    syncButtonStates();
-    setStep(3);
-    showMessage(result.message || "Identity verified. You may now check in or out.", "success");
-  } catch (err) {
-    console.error(err);
-    showMessage(err.message || "Biometric verification failed. Try again.", "error");
-  } finally {
-    setBtnLoading(bioBtn, false);
-  }
-});
-
-
-// ══════════════════════════════════════
-// CHECK-IN FLOW (with selfie preview)
-// ══════════════════════════════════════
-
-checkinBtn.addEventListener("click", async () => {
-  if (!currentStaff || !biometricVerified) {
-    showMessage("Verify identity first.", "warning");
-    return;
-  }
-
-  // Capture selfie and show preview before submitting
-  capturedSelfie = captureImage(video);
-  pendingAction  = "checkin";
-
-  selfieImg.src = capturedSelfie;
-  selfiePreview.classList.add("visible");
-  showMessage("Selfie captured. Review and confirm.", "info");
-});
-
-
-// ══════════════════════════════════════
-// CHECK-OUT FLOW
-// ══════════════════════════════════════
-
-checkoutBtn.addEventListener("click", async () => {
-  if (!currentStaff || !biometricVerified) {
-    showMessage("Verify identity first.", "warning");
-    return;
-  }
-
-  pendingAction = "checkout";
-
-  // No selfie for checkout — go straight to confirm
-  capturedSelfie = null;
-  submitAction();
-});
-
-
-// ══════════════════════════════════════
-// SELFIE: RETAKE / CONFIRM
-// ══════════════════════════════════════
-
-retakeBtn.addEventListener("click", () => {
-  selfiePreview.classList.remove("visible");
-  capturedSelfie = null;
-  pendingAction  = null;
-  showMessage("Selfie discarded. Click Check In to try again.", "info");
-});
-
-confirmBtn.addEventListener("click", () => {
-  submitAction();
-});
-
-
-// ══════════════════════════════════════
-// SUBMIT ATTENDANCE
-// ══════════════════════════════════════
-
-async function submitAction() {
-  if (!pendingAction || !currentStaff) return;
-
-  setBtnLoading(confirmBtn, true);
-  checkinBtn.disabled  = true;
-  checkoutBtn.disabled = true;
-
-  const today  = getToday();
-  const ref    = doc(db, "attendance", `${currentStaff.uid}_${today}`);
-
-  try {
-
-    if (pendingAction === "checkin") {
-
-      // Final guard: check Firestore in case another device checked in
-      const existing = await getDoc(ref);
-      if (existing.exists() && existing.data().checkInTime) {
-        throw new Error("Already checked in today.");
-      }
-
-      const windowStatus = getTimeWindow();
-      if (windowStatus !== "present" && windowStatus !== "late") {
-        throw new Error("Check-in window is closed for today.");
-      }
-
-      const data = {
-        userId:            currentStaff.uid,
-        name:              str(currentStaff.name),
-        email:             str(currentStaff.email),
-        staffId:           str(currentStaff.staffId),
-        department:        str(currentStaff.department),
-        date:              today,
-        checkInTime:       new Date().toISOString(),
-        method:            "kiosk",
-        status:            windowStatus,   // "present" | "late"
-        selfieUrl:         capturedSelfie || "",
-        biometricVerified: true,
-        location:          currentLocation,
-        offline:           !navigator.onLine,
-        synced:            navigator.onLine,
-      };
-
-      if (!navigator.onLine) {
-        saveOffline(data);
-      } else {
-        await setDoc(ref, data, { merge: true });
-      }
-
-      showSuccess("Check-In Successful!", `✅ ${str(currentStaff.name)} is marked ${windowStatus}.`);
-
-    } else if (pendingAction === "checkout") {
-
-      const snap = await getDoc(ref);
-      if (!snap.exists() || !snap.data().checkInTime) {
-        throw new Error("No check-in record found for today.");
-      }
-      if (snap.data().checkOutTime) {
-        throw new Error("Already checked out today.");
-      }
-
-      // Use merge — only update the two fields, never overwrite the full doc
-      await setDoc(ref, {
-        checkOutTime: new Date().toISOString(),
-        overridden:   false,
-      }, { merge: true });
-
-      showSuccess("Check-Out Successful!", `🚪 ${str(currentStaff.name)} has been checked out.`);
-    }
-
-  } catch (err) {
-    console.error("Submit error:", err);
-    showMessage(err.message || "An error occurred. Please try again.", "error");
-    selfiePreview.classList.remove("visible");
-    setBtnLoading(confirmBtn, false);
-    checkinBtn.disabled  = false;
-    checkoutBtn.disabled = false;
-  } finally {
-    pendingAction  = null;
-    capturedSelfie = null;
-  }
-}
-
-
-// ══════════════════════════════════════
-// SUCCESS → COUNTDOWN → RESET
-// ══════════════════════════════════════
-
-function showSuccess(title, subtitle) {
-  selfiePreview.classList.remove("visible");
-
-  $("resetOverlayIcon").textContent = title.includes("Out") ? "🚪" : "✅";
-  $("resetOverlayMsg").textContent  = title;
-  $("resetOverlay").querySelector(".reset-sub").innerHTML =
-    `${subtitle} &nbsp;·&nbsp; Kiosk resets in <span id="resetCountSub">5</span>s`;
-
-  resetOverlay.classList.add("show");
-
-  // Animate the SVG ring over 5s
-  const ring = $("ringFill");
-  ring.style.animationDuration = "5s";
-  ring.classList.add("animating");
-
-  let count = 5;
-  $("ringNum").textContent = count;
-  $("resetCountSub") && ($("resetCountSub").textContent = count);
-
-  const iv = setInterval(() => {
-    count--;
-    $("ringNum").textContent = count;
-    const sub = document.getElementById("resetCountSub");
-    if (sub) sub.textContent = count;
-
-    if (count <= 0) {
-      clearInterval(iv);
-      ring.classList.remove("animating");
-      resetOverlay.classList.remove("show");
-      resetKiosk();
-    }
-  }, 1000);
-}
-
-
-// ══════════════════════════════════════
-// RESET KIOSK
-// ══════════════════════════════════════
-
-function resetKiosk() {
-  currentStaff      = null;
-  biometricVerified = false;
-  todayRecord       = null;
-  pendingAction     = null;
-  capturedSelfie    = null;
-
-  staffIdInput.value = "";
-  staffCard.classList.remove("visible");
-  selfiePreview.classList.remove("visible");
-  selfieImg.src = "";
-
-  bioBtn.disabled      = true;
-  checkinBtn.disabled  = true;
-  checkoutBtn.disabled = true;
-
-  setBtnLoading(confirmBtn,  false);
-  setBtnLoading(lookupBtn,   false);
-  setBtnLoading(bioBtn,      false);
-  setBtnLoading(checkinBtn,  false);
-  setBtnLoading(checkoutBtn, false);
-
-  setStep(1);
-  showMessage("Waiting for staff identification…", "info");
-  staffIdInput.focus();
-}
-
-resetBtn.addEventListener("click", resetKiosk);
-
-// Focus the input on load
-window.addEventListener("load", () => staffIdInput.focus());
-
-
-// ══════════════════════════════════════
-// LIVE CLOCK
-// ══════════════════════════════════════
-
-function updateClock() {
-  const now = new Date();
-  $("liveClock").textContent = now.toLocaleTimeString("en-US", {
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-  });
-  $("liveDate").textContent = now.toLocaleDateString("en-US", {
-    weekday: "short", year: "numeric", month: "short", day: "numeric",
-  }).toUpperCase();
-}
-
-updateClock();
-setInterval(updateClock, 1000);
-
-
-// ══════════════════════════════════════
-// SERVICE WORKER
-// ══════════════════════════════════════
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      await navigator.serviceWorker.register("./sw.js");
-    } catch (err) {
-      console.warn("SW registration failed:", err);
-    }
-  });
-}
-
 </script>
 </body>
 </html>
