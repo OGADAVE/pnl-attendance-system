@@ -146,18 +146,18 @@ body::after {
 .text-amber { color:var(--amber); }
 .text-muted { color:var(--muted); }
 
-/* ── Geofence block banner ─────────────── */
+/* ── Geofence ADVISORY banner (amber, non-blocking) ── */
 .geo-block-banner {
   display:none;
   flex-direction:column;
   gap:10px;
   margin-top:12px;
   padding:12px 14px;
-  background:rgba(248,113,113,.07);
-  border:1px solid var(--red-dim);
+  background:rgba(251,191,36,.07);
+  border:1px solid var(--amber-dim);
   border-radius:var(--radius-sm);
   font-size:12.5px;
-  color:var(--red);
+  color:var(--amber);
   font-family:var(--font-mono);
   line-height:1.6;
 }
@@ -412,7 +412,13 @@ video           { width:100%; height:100%; object-fit:cover; display:block; }
 
     </div>
 
-    <!-- Geofence block banner. -->
+    <!--
+      Geofence block banner.
+      Includes:
+        - human-readable reason message
+        - iOS Settings tip (hidden until permission denied on iPhone)
+        - Retry Location button (always shown when blocked)
+    -->
     <div class="geo-block-banner" id="geoBlockBanner">
       <div style="display:flex;gap:8px;align-items:flex-start;">
         <span>&#128683;</span>
@@ -494,7 +500,7 @@ video           { width:100%; height:100%; object-fit:cover; display:block; }
   </div>
 
   <div class="footer anim-4">
-    PEAKNOVA LIMITED &nbsp;&bull;&nbsp; SMART ATTENDANCE SYSTEM
+    PEAKNOVA LIMITED &nbsp;&bull;&nbsp; SMART ATTENDANCE SYSTEM &nbsp;&bull;&nbsp; v3.1
   </div>
 
 </div><!-- /container -->
@@ -513,7 +519,7 @@ import {
   startCamera, checkIn, checkOut,
   syncOfflineAttendance
 } from "./js/app.js";
-import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 // ══════════════════════════════════════════
@@ -531,7 +537,7 @@ import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/fire
 const OFFICE = Object.freeze({
   lat:     9.103504,
   lng:     7.415635,
-  radiusM: 1000,
+  radiusM: 150,
   label:   "PEAKNOVA Office, Gwarinpa, Abuja",
 });
 
@@ -694,19 +700,19 @@ function setBtnLoading(btn, loading) {
 // ══════════════════════════════════════════
 // BUTTON STATE ENGINE
 //
-//  Both faceVerified AND isWithinRadius must
-//  be true before Check In or Check Out works.
-//  This is the single source of truth — nothing
-//  else should directly set button.disabled.
+//  Face verification is the only hard gate.
+//  Location is now advisory — check-in is
+//  allowed regardless of GPS result, but the
+//  record is tagged with locationVerified so
+//  the admin can review flagged records.
 // ══════════════════════════════════════════
 
 function syncButtonStates() {
   const hasIn  = !!(todayRecord?.checkInTime  && todayRecord.checkInTime._methodName  !== "serverTimestamp");
   const hasOut = !!(todayRecord?.checkOutTime && todayRecord.checkOutTime._methodName !== "serverTimestamp");
-  const canAct = faceVerified && isWithinRadius;
 
-  checkinBtn.disabled  = !canAct || hasIn;
-  checkoutBtn.disabled = !canAct || !hasIn || hasOut;
+  checkinBtn.disabled  = !faceVerified || hasIn;
+  checkoutBtn.disabled = !faceVerified || !hasIn || hasOut;
 
   // Summary pill
   if (hasOut) {
@@ -743,6 +749,41 @@ function watchTodayAttendance(userId) {
 
 // ══════════════════════════════════════════
 // GEOFENCE — iOS-AWARE GPS LOCATION CHECK
+//
+//  ROOT CAUSE OF "NOT AT OFFICE" BUG (fixed here):
+//
+//  1. maximumAge: 30_000 (OLD) → maximumAge: 0 (NEW)
+//     The old code allowed the browser to serve a
+//     30-second-old cached position. If the user was
+//     elsewhere recently (or the phone cached a position
+//     from before they arrived), they would fail
+//     immediately even while standing in the office.
+//     Setting maximumAge: 0 forces a fresh fix every time.
+//
+//  2. Instant accuracy rejection (OLD) → GPS settle window (NEW)
+//     watchPosition fires almost instantly with a coarse
+//     Wi-Fi/cell fix (accuracy 100–500 m). The old code
+//     checked accuracy immediately and rejected anyone
+//     whose first fix was imprecise — which is almost
+//     everyone indoors. GPS_SETTLE_MS (8 s) gives the
+//     chip time to get a real satellite fix before we
+//     evaluate accuracy.
+//
+//  3. accuracy > radiusM * 2 = 300 m (OLD)
+//     Nigerian urban indoor GPS is routinely 100–300 m.
+//     Almost every indoor fix was failing this threshold.
+//     Now: Android gets 2× tolerance, iOS gets 4× because
+//     concrete buildings eat GPS signal more aggressively
+//     on iPhones.
+//
+//  4. iOS coarse-fix leniency
+//     After the settle window, if accuracy is still poor
+//     but the coarse fix centre-point still places the user
+//     within (radius + 50% of accuracy), we allow it on iOS.
+//     This handles the common case of a staff member sitting
+//     inside the building whose GPS fix has a large error
+//     circle but is still centred approximately on their
+//     true location.
 // ══════════════════════════════════════════
 
 function startGeofence() {
@@ -795,21 +836,27 @@ function startGeofence() {
         // A person inside the building with a 200 m accuracy fix
         // centred on their true position will satisfy this.
         const withinCoarse = IS_IOS && (dist <= OFFICE.radiusM + accuracy * 0.5);
-        isWithinRadius = withinCoarse;
+        isWithinRadius  = withinCoarse;
+        _lastDistanceM  = dist;
+        _lastAccuracyM  = accuracy;
+        _lastCoords     = { lat: latitude, lng: longitude };
         applyGeofenceResult(withinCoarse, dist, accuracy, false);
         return;
       }
 
       // ── Good precise fix — evaluate normally ──────────────
       const within  = dist <= OFFICE.radiusM;
-      isWithinRadius = within;
+      isWithinRadius  = within;
+      _lastDistanceM  = dist;
+      _lastAccuracyM  = accuracy;
+      _lastCoords     = { lat: latitude, lng: longitude };
 
       if (within) {
         setDot("gpsDot", "gpsStatus", "green", "At Office \u2713");
         geoSub.textContent = `${distStr} from ${OFFICE.label} \u00B7 ${accStr}`;
       } else {
         setDot("gpsDot", "gpsStatus", "red", "Outside Office");
-        geoSub.textContent = `${distStr} from office \u2014 attendance blocked`;
+        geoSub.textContent = `${distStr} from ${OFFICE.label} \u2014 will flag for review`;
       }
 
       applyGeofenceResult(within, dist, accuracy, false);
@@ -846,14 +893,19 @@ function startGeofence() {
 
 function applyGeofenceResult(isWithin, distM, accuracy, isDenied) {
   if (!isWithin) {
-    // Build a human-readable reason
-    let msg = "You must be physically present at the office to record attendance.";
-    if (distM !== null) {
-      msg += ` You are currently ${formatDistance(distM)} away from ${OFFICE.label}.`;
+    // Advisory message — warns but does NOT block check-in
+    let msg = "\u26A0\uFE0F Location unconfirmed";
+    if (isDenied) {
+      msg += " \u2014 GPS permission denied.";
+    } else if (distM !== null && distM > OFFICE.radiusM) {
+      msg += ` \u2014 you appear to be ${formatDistance(distM)} from ${OFFICE.label}.`;
+    } else if (accuracy !== null && accuracy > OFFICE.radiusM) {
+      msg += ` \u2014 GPS signal weak (\u00B1${Math.round(accuracy)} m). Move near a window for a better fix.`;
+    } else {
+      msg += " \u2014 GPS still acquiring a fix.";
     }
-    if (accuracy !== null && accuracy > OFFICE.radiusM) {
-      msg += ` GPS accuracy is \u00B1${Math.round(accuracy)} m \u2014 try moving near a window.`;
-    }
+    msg += " Your check-in will be flagged for admin review.";
+
     geoBlockMsg.textContent = msg;
     geoBlockBanner.classList.add("show");
 
@@ -871,6 +923,8 @@ function applyGeofenceResult(isWithin, distM, accuracy, isDenied) {
     retryLocationBtn.classList.remove("show");
   }
 
+  // Location state is advisory — always sync buttons
+  // (check-in enabled as long as face is verified)
   syncButtonStates();
 }
 
@@ -1171,9 +1225,7 @@ window.addEventListener("offline", () => {
 // ══════════════════════════════════════════
 
 checkinBtn.addEventListener("click", async () => {
-  // Belt-and-suspenders runtime guard beyond button disabled state
-  if (!faceVerified)   { showMessage("Verify your face first.", "warning");             return; }
-  if (!isWithinRadius) { showMessage("You must be at the office to check in.", "error"); return; }
+  if (!faceVerified) { showMessage("Verify your face first.", "warning"); return; }
 
   setBtnLoading(checkinBtn, true);
   try {
@@ -1181,9 +1233,35 @@ checkinBtn.addEventListener("click", async () => {
       videoElement: video,
       method: navigator.onLine ? "mobile" : "offline",
     });
+
     if (result.success) {
-      showMessage(result.message || "Checked in successfully!", "success");
+      // Merge location metadata into the attendance record.
+      // This works regardless of what app.js writes — it just
+      // adds the location fields on top of whatever was saved.
+      try {
+        const userId  = str(currentUser?.userId) || currentUser?.uid;
+        const locMeta = {
+          locationVerified: isWithinRadius,
+          locationFlagged:  !isWithinRadius,
+          locationAccuracy: _lastAccuracyM,
+          locationDistance: _lastDistanceM,
+          locationCoords:   _lastCoords,
+        };
+        await setDoc(
+          doc(db, "attendance", `${userId}_${getToday()}`),
+          locMeta,
+          { merge: true }
+        );
+      } catch (locErr) {
+        console.warn("Location metadata write failed:", locErr);
+      }
+
+      const flagMsg = !isWithinRadius
+        ? " (location unconfirmed — flagged for admin review)"
+        : "";
+      showMessage((result.message || "Checked in successfully!") + flagMsg, "success");
       showToast("Checked in \u2713", "success");
+
     } else {
       showMessage(result.message || "Check-in failed.", "error");
       showToast("Check-in failed", "error");
@@ -1194,7 +1272,6 @@ checkinBtn.addEventListener("click", async () => {
     showToast(err.message || "Check-in error", "error");
   } finally {
     setBtnLoading(checkinBtn, false);
-    // onSnapshot will trigger syncButtonStates() automatically
   }
 });
 
@@ -1204,15 +1281,36 @@ checkinBtn.addEventListener("click", async () => {
 // ══════════════════════════════════════════
 
 checkoutBtn.addEventListener("click", async () => {
-  if (!faceVerified)   { showMessage("Verify your face first.", "warning");              return; }
-  if (!isWithinRadius) { showMessage("You must be at the office to check out.", "error"); return; }
+  if (!faceVerified) { showMessage("Verify your face first.", "warning"); return; }
 
   setBtnLoading(checkoutBtn, true);
   try {
     const result = await checkOut();
+
     if (result.success) {
-      showMessage(result.message || "Checked out. Have a great day! \uD83D\uDC4B", "success");
+      // Merge check-out location metadata
+      try {
+        const userId = str(currentUser?.userId) || currentUser?.uid;
+        await setDoc(
+          doc(db, "attendance", `${userId}_${getToday()}`),
+          {
+            checkOutLocationVerified: isWithinRadius,
+            checkOutLocationFlagged:  !isWithinRadius,
+            checkOutLocationAccuracy: _lastAccuracyM,
+            checkOutLocationCoords:   _lastCoords,
+          },
+          { merge: true }
+        );
+      } catch (locErr) {
+        console.warn("Check-out location metadata write failed:", locErr);
+      }
+
+      const flagMsg = !isWithinRadius
+        ? " (location unconfirmed \u2014 flagged for review)"
+        : "";
+      showMessage((result.message || "Checked out. Have a great day! \uD83D\uDC4B") + flagMsg, "success");
       showToast("Checked out \u2713", "success");
+
     } else {
       showMessage(result.message || "Check-out failed.", "error");
       showToast("Check-out failed", "error");
