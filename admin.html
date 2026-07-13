@@ -255,6 +255,194 @@ tbody tr:last-child td { border-bottom: none; }
   .header           { flex-direction: column; }
 }
 
+
+/* ══════════════════════════════════════
+   EXPORT MODAL
+══════════════════════════════════════ */
+
+#exportModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(5px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 9998;
+}
+
+#exportModal.open { display: flex; }
+
+.export-modal-inner {
+  width: 100%;
+  max-width: 500px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.export-modal-inner h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.modal-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.export-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ── Preset buttons ── */
+
+.export-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.preset-btn {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  background: var(--card2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s, background .2s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preset-btn .p-label { font-size: 13px; color: var(--text); }
+.preset-btn .p-dates { font-size: 10px; color: var(--muted); font-family: monospace; font-weight: 400; }
+.preset-btn:hover  { border-color: var(--purple); background: rgba(99,102,241,.08); }
+.preset-btn.active { border-color: var(--purple); background: rgba(99,102,241,.12); }
+
+/* ── Custom range ── */
+
+.export-range-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.export-range-row label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.export-range-row input[type="date"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--card2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+  color-scheme: dark;
+}
+
+.export-range-row input[type="date"]:focus { border-color: var(--purple); }
+
+/* ── Summary ── */
+
+.export-summary {
+  padding: 12px 15px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.export-summary.ready { border-color: var(--green); color: var(--green); }
+.export-summary.warn  { border-color: var(--orange); color: var(--orange); }
+
+/* ── Action buttons ── */
+
+.export-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-do-export {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  background: var(--green);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity .2s;
+}
+
+.btn-do-export:disabled   { opacity: .45; cursor: not-allowed; }
+.btn-do-export:hover:not(:disabled) { opacity: .9; }
+
+.btn-do-export.loading .export-btn-icon,
+.btn-do-export.loading .export-btn-label { display: none; }
+
+.btn-do-export.loading::after {
+  content: '';
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+.btn-cancel-export {
+  flex: 0 0 auto;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 20px;
+  background: var(--card2);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+
+.btn-cancel-export:hover { border-color: var(--red); color: var(--red); }
+
+
 </style>
 </head>
 <body>
@@ -442,10 +630,6 @@ let attendance = [];   // from Firestore "attendance" collection
 // HELPERS
 // ══════════════════════════════════════
 
-/**
- * Returns today's date in YYYY-MM-DD using LOCAL time,
- * avoiding the UTC-drift bug from toISOString().
- */
 function getToday() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -527,11 +711,6 @@ function showToast(message, type = "success") {
 // DEBOUNCED RENDER
 // ══════════════════════════════════════
 
-/**
- * Both onSnapshot listeners call scheduleRender() instead of render()
- * directly. This collapses rapid back-to-back snapshot fires (common on
- * page load and after writes) into a single render, preventing flicker.
- */
 let _renderTimer = null;
 
 function scheduleRender() {
@@ -593,14 +772,6 @@ function initializeRealtime() {
 
 // ══════════════════════════════════════
 // LOCATION CELL RENDERER
-//
-//  Shows a colour-coded badge for each
-//  record based on the location metadata
-//  written by dashboard.html after check-in.
-//
-//  ✅ Verified    — GPS confirmed at office
-//  ⚠️ Flagged     — GPS unconfirmed / outside
-//  🔵 No data     — older record without location
 // ══════════════════════════════════════
 
 function renderLocationCell(record) {
@@ -631,7 +802,6 @@ function renderLocationCell(record) {
   return `<span style="color:var(--orange);font-weight:600;font-size:12px" title="${detail || "Location could not be confirmed"}">&#9888; Flagged${detail ? '<br><span style=\"font-size:10px;font-weight:400;color:var(--muted)\">' + detail + "</span>" : ""}</span>`;
 }
 
-
 // ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
@@ -649,10 +819,7 @@ function render() {
   let present = 0, late = 0, absent = 0, flagged = 0;
 
   // ── Build rows ────────────────────────
-  // Collect HTML strings in an array, then set innerHTML ONCE.
-  // Using innerHTML += inside a loop destroys and recreates existing
-  // DOM nodes on every iteration — the root cause of the "table clears" bug.
-
+  
   const rows = [];
 
   staffUsers.forEach(user => {
@@ -823,7 +990,6 @@ createBtn.addEventListener("click", async () => {
   }
 });
 
-
 // ══════════════════════════════════════
 // OVERRIDE CHECK-IN
 // ══════════════════════════════════════
@@ -858,7 +1024,6 @@ window.overrideCheckIn = async function (userId) {
   }
 };
 
-
 // ══════════════════════════════════════
 // OVERRIDE CHECK-OUT
 // ══════════════════════════════════════
@@ -889,35 +1054,268 @@ window.overrideCheckOut = async function (userId) {
 
 
 // ══════════════════════════════════════
-// EXPORT CSV
+// EXPORT CSV — DATE RANGE
 // ══════════════════════════════════════
 
+const exportModal     = document.getElementById("exportModal");
+const exportFrom      = document.getElementById("exportFrom");
+const exportTo        = document.getElementById("exportTo");
+const doExportBtn     = document.getElementById("doExportBtn");
+const cancelExportBtn = document.getElementById("cancelExportBtn");
+const exportSummary   = document.getElementById("exportSummary");
+
+// ── Date helpers ──────────────────────
+
+function ymd(d) {
+  // Returns YYYY-MM-DD for a Date object
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function startOfWeek() {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay()); // Sunday
+  return ymd(d);
+}
+
+function endOfWeek() {
+  const d = new Date();
+  d.setDate(d.getDate() + (6 - d.getDay())); // Saturday
+  return ymd(d);
+}
+
+function startOfMonth(offset = 0) {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  return ymd(d);
+}
+
+function endOfMonth(offset = 0) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1 + offset, 0); // day 0 of next month = last day of this month
+  return ymd(d);
+}
+
+function monthLabel(offset = 0) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + offset);
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
+function dayCount(from, to) {
+  if (!from || !to || from > to) return 0;
+  const msPerDay = 86400000;
+  return Math.round((new Date(to) - new Date(from)) / msPerDay) + 1;
+}
+
+// ── Populate preset labels on open ────
+
+function populatePresetDates() {
+  const today = getToday();
+  document.getElementById("presetTodayDates").textContent     = today;
+  document.getElementById("presetWeekDates").textContent      = startOfWeek() + " → " + endOfWeek();
+  document.getElementById("presetMonthDates").textContent     = monthLabel(0);
+  document.getElementById("presetLastMonthDates").textContent = monthLabel(-1);
+}
+
+// ── Preset buttons ─────────────────────
+
+document.querySelectorAll(".preset-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const preset = btn.dataset.preset;
+    if (preset === "today") {
+      exportFrom.value = getToday();
+      exportTo.value   = getToday();
+    } else if (preset === "week") {
+      exportFrom.value = startOfWeek();
+      exportTo.value   = endOfWeek();
+    } else if (preset === "month") {
+      exportFrom.value = startOfMonth(0);
+      exportTo.value   = endOfMonth(0);
+    } else if (preset === "lastmonth") {
+      exportFrom.value = startOfMonth(-1);
+      exportTo.value   = endOfMonth(-1);
+    }
+    updateExportSummary();
+  });
+});
+
+// ── Custom range inputs ────────────────
+
+exportFrom.addEventListener("change", () => {
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+  updateExportSummary();
+});
+exportTo.addEventListener("change", () => {
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+  updateExportSummary();
+});
+
+function updateExportSummary() {
+  const from = exportFrom.value;
+  const to   = exportTo.value;
+
+  if (!from || !to) {
+    exportSummary.textContent = "Select a date range above to begin.";
+    exportSummary.className   = "export-summary";
+    doExportBtn.disabled      = true;
+    return;
+  }
+
+  if (from > to) {
+    exportSummary.textContent = "⚠ Start date must be before end date.";
+    exportSummary.className   = "export-summary warn";
+    doExportBtn.disabled      = true;
+    return;
+  }
+
+  const days   = dayCount(from, to);
+  const staff  = users.filter(u => u.role === "staff").length;
+
+  exportSummary.innerHTML  = `&#10003; <strong>${days} day${days > 1 ? "s" : ""}</strong> &bull; ${from} to ${to} &bull; up to <strong>${staff} staff &times; ${days} = ${staff * days} rows</strong>`;
+  exportSummary.className  = "export-summary ready";
+  doExportBtn.disabled     = false;
+}
+
+// ── Open / close modal ─────────────────
+
 exportBtn.addEventListener("click", () => {
-  const rows = [["Name","Email","Staff ID","Status","Method","Check-In","Check-Out"]];
+  populatePresetDates();
 
-  document.querySelectorAll("tbody tr").forEach(row => {
-    const cols = row.querySelectorAll("td");
-    if (cols.length < 7) return;
-    rows.push(
-      Array.from(cols)
-        .slice(0, 7)
-        .map(col => `"${col.innerText.replace(/"/g, '""').trim()}"`)
-    );
-  });
+  // Default to "This Month" on open
+  exportFrom.value = startOfMonth(0);
+  exportTo.value   = endOfMonth(0);
+  document.querySelector('[data-preset="month"]').classList.add("active");
+  updateExportSummary();
 
-  const csv  = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url  = URL.createObjectURL(blob);
-  const a    = Object.assign(document.createElement("a"), {
-    href:     url,
-    download: `attendance-${getToday()}.csv`,
-  });
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  exportModal.classList.add("open");
+});
 
-  showToast("CSV exported ✓");
+cancelExportBtn.addEventListener("click", () => exportModal.classList.remove("open"));
+exportModal.addEventListener("click", e => { if (e.target === exportModal) exportModal.classList.remove("open"); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") exportModal.classList.remove("open"); });
+
+// ── Run the export ─────────────────────
+
+doExportBtn.addEventListener("click", async () => {
+  const from = exportFrom.value;
+  const to   = exportTo.value;
+  if (!from || !to || from > to) return;
+
+  // Loading state
+  doExportBtn.classList.add("loading");
+  doExportBtn.disabled = true;
+  exportSummary.textContent = "⏳ Fetching attendance records from Firestore...";
+  exportSummary.className   = "export-summary";
+
+  try {
+    // Build a map of userId → user for quick lookup
+    const userMap = {};
+    users.filter(u => u.role === "staff").forEach(u => {
+      userMap[u.userId || u.id] = u;
+    });
+
+    // Generate every date in range as YYYY-MM-DD strings
+    const dates = [];
+    const cur   = new Date(from + "T00:00:00");
+    const end   = new Date(to   + "T00:00:00");
+    while (cur <= end) {
+      dates.push(ymd(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // Collect all attendance records for the range from
+    // the already-loaded in-memory attendance array.
+    
+    const staffIds = Object.keys(userMap);
+    const rows     = [];
+
+    // Header row
+    rows.push([
+      "Date",
+      "Name",
+      "Email",
+      "Staff ID",
+      "Department",
+      "Status",
+      "Method",
+      "Check-In",
+      "Check-Out",
+      "Location",
+      "Distance (m)",
+    ]);
+
+    // One row per staff per day in the range
+    dates.forEach(date => {
+      staffIds.forEach(uid => {
+        const user   = userMap[uid];
+        const record = attendance.find(r => r.userId === uid && r.date === date);
+
+        const status    = record ? (record.status   || "present") : "absent";
+        const method    = record ? (record.method   || "-")       : "-";
+        const checkIn   = record && record.checkInTime  ? formatTime(record.checkInTime)  : "-";
+        const checkOut  = record && record.checkOutTime ? formatTime(record.checkOutTime) : "-";
+
+        // Location column
+        let locStr = "No data";
+        if (record) {
+          if (record.locationVerified === true)       locStr = "Verified";
+          else if (record.locationFlagged === true)   locStr = "Flagged";
+        }
+
+        const distStr = record?.locationDistance != null
+          ? String(Math.round(record.locationDistance))
+          : "-";
+
+        rows.push([
+          date,
+          safeValue(user.name),
+          safeValue(user.email),
+          safeValue(user.staffId),
+          safeValue(user.department),
+          status,
+          method,
+          checkIn,
+          checkOut,
+          locStr,
+          distStr,
+        ].map(v => `"${String(v).replace(/"/g, '""').trim()}"`));
+      });
+    });
+
+    // Build CSV string
+    const csv  = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); // BOM for Excel
+    const url  = URL.createObjectURL(blob);
+
+    const filename = from === to
+      ? `attendance-${from}.csv`
+      : `attendance-${from}_to_${to}.csv`;
+
+    const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    exportModal.classList.remove("open");
+    showToast(`CSV exported ✓  (${rows.length - 1} rows, ${dates.length} days)`, "success");
+
+  } catch (err) {
+    console.error("Export error:", err);
+    exportSummary.textContent = "Export failed: " + (err.message || "Unknown error");
+    exportSummary.className   = "export-summary warn";
+  } finally {
+    doExportBtn.classList.remove("loading");
+    doExportBtn.disabled = false;
+  }
 });
 
 
@@ -987,5 +1385,62 @@ if ("serviceWorker" in navigator) {
 }
 
 </script>
+
+<!-- ══════════════════════════════════════
+     EXPORT MODAL
+════════════════════════════════════════ -->
+<div id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+  <div class="export-modal-inner">
+
+    <h2 id="exportModalTitle">&#128196; Export Attendance CSV</h2>
+    <p class="modal-sub">Choose a date range. The CSV includes every staff member's record for each day — ready for payroll.</p>
+
+    <div class="export-section-label">Quick Select</div>
+    <div class="export-presets">
+      <button class="preset-btn" data-preset="today">
+        <span class="p-label">Today</span>
+        <span class="p-dates" id="presetTodayDates"></span>
+      </button>
+      <button class="preset-btn" data-preset="week">
+        <span class="p-label">This Week</span>
+        <span class="p-dates" id="presetWeekDates"></span>
+      </button>
+      <button class="preset-btn active" data-preset="month">
+        <span class="p-label">This Month</span>
+        <span class="p-dates" id="presetMonthDates"></span>
+      </button>
+      <button class="preset-btn" data-preset="lastmonth">
+        <span class="p-label">Last Month</span>
+        <span class="p-dates" id="presetLastMonthDates"></span>
+      </button>
+    </div>
+
+    <div class="export-section-label">Custom Range</div>
+    <div class="export-range-row">
+      <div>
+        <label for="exportFrom">From</label>
+        <input type="date" id="exportFrom" />
+      </div>
+      <div>
+        <label for="exportTo">To</label>
+        <input type="date" id="exportTo" />
+      </div>
+    </div>
+
+    <div class="export-summary" id="exportSummary">
+      Select a date range above to preview.
+    </div>
+
+    <div class="export-modal-actions">
+      <button class="btn-do-export" id="doExportBtn" disabled>
+        <span class="export-btn-icon">&#11015;&#65039;</span>
+        <span class="export-btn-label">Download CSV</span>
+      </button>
+      <button class="btn-cancel-export" id="cancelExportBtn">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
