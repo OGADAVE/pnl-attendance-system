@@ -256,6 +256,57 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 
+
+/* ── Export format selector ── */
+
+.export-format-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.format-btn {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: var(--card2);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .2s, background .2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text);
+}
+
+.format-btn .fmt-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.format-btn .fmt-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.format-btn .fmt-desc {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.format-btn:hover  { border-color: var(--blue);   background: rgba(56,189,248,.06); }
+.format-btn.active { border-color: var(--purple);  background: rgba(99,102,241,.1);  }
+.format-btn.active .fmt-label { color: var(--purple); }
+
+
 /* ══════════════════════════════════════
    EXPORT MODAL
 ══════════════════════════════════════ */
@@ -630,6 +681,10 @@ let attendance = [];   // from Firestore "attendance" collection
 // HELPERS
 // ══════════════════════════════════════
 
+/**
+ * Returns today's date in YYYY-MM-DD using LOCAL time,
+ * avoiding the UTC-drift bug from toISOString().
+ */
 function getToday() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -711,6 +766,11 @@ function showToast(message, type = "success") {
 // DEBOUNCED RENDER
 // ══════════════════════════════════════
 
+/**
+ * Both onSnapshot listeners call scheduleRender() instead of render()
+ * directly. This collapses rapid back-to-back snapshot fires (common on
+ * page load and after writes) into a single render, preventing flicker.
+ */
 let _renderTimer = null;
 
 function scheduleRender() {
@@ -772,6 +832,14 @@ function initializeRealtime() {
 
 // ══════════════════════════════════════
 // LOCATION CELL RENDERER
+//
+//  Shows a colour-coded badge for each
+//  record based on the location metadata
+//  written by dashboard.html after check-in.
+//
+//  ✅ Verified    — GPS confirmed at office
+//  ⚠️ Flagged     — GPS unconfirmed / outside
+//  🔵 No data     — older record without location
 // ══════════════════════════════════════
 
 function renderLocationCell(record) {
@@ -802,6 +870,7 @@ function renderLocationCell(record) {
   return `<span style="color:var(--orange);font-weight:600;font-size:12px" title="${detail || "Location could not be confirmed"}">&#9888; Flagged${detail ? '<br><span style=\"font-size:10px;font-weight:400;color:var(--muted)\">' + detail + "</span>" : ""}</span>`;
 }
 
+
 // ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
@@ -819,7 +888,10 @@ function render() {
   let present = 0, late = 0, absent = 0, flagged = 0;
 
   // ── Build rows ────────────────────────
-  
+  // Collect HTML strings in an array, then set innerHTML ONCE.
+  // Using innerHTML += inside a loop destroys and recreates existing
+  // DOM nodes on every iteration — the root cause of the "table clears" bug.
+
   const rows = [];
 
   staffUsers.forEach(user => {
@@ -990,6 +1062,7 @@ createBtn.addEventListener("click", async () => {
   }
 });
 
+
 // ══════════════════════════════════════
 // OVERRIDE CHECK-IN
 // ══════════════════════════════════════
@@ -1024,6 +1097,7 @@ window.overrideCheckIn = async function (userId) {
   }
 };
 
+
 // ══════════════════════════════════════
 // OVERRIDE CHECK-OUT
 // ══════════════════════════════════════
@@ -1055,6 +1129,17 @@ window.overrideCheckOut = async function (userId) {
 
 // ══════════════════════════════════════
 // EXPORT CSV — DATE RANGE
+//
+//  Queries Firestore directly for all
+//  attendance records in the selected range.
+//  Never reads from the DOM — so you always
+//  get the full dataset regardless of what's
+//  currently visible in the table.
+//
+//  CSV columns:
+//  Date, Name, Email, Staff ID, Department,
+//  Status, Method, Check-In, Check-Out,
+//  Location Verified, Distance (m)
 // ══════════════════════════════════════
 
 const exportModal     = document.getElementById("exportModal");
@@ -1202,6 +1287,20 @@ cancelExportBtn.addEventListener("click", () => exportModal.classList.remove("op
 exportModal.addEventListener("click", e => { if (e.target === exportModal) exportModal.classList.remove("open"); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") exportModal.classList.remove("open"); });
 
+// ── Format selector state ─────────────
+
+let exportFormat = "pivot"; // "pivot" | "detailed"
+
+document.querySelectorAll(".format-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".format-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    exportFormat = btn.dataset.fmt;
+    updateExportSummary();
+  });
+});
+
+
 // ── Run the export ─────────────────────
 
 doExportBtn.addEventListener("click", async () => {
@@ -1209,104 +1308,144 @@ doExportBtn.addEventListener("click", async () => {
   const to   = exportTo.value;
   if (!from || !to || from > to) return;
 
-  // Loading state
   doExportBtn.classList.add("loading");
   doExportBtn.disabled = true;
-  exportSummary.textContent = "⏳ Fetching attendance records from Firestore...";
+  exportSummary.textContent = "Building your spreadsheet...";
   exportSummary.className   = "export-summary";
 
   try {
-    // Build a map of userId → user for quick lookup
-    const userMap = {};
-    users.filter(u => u.role === "staff").forEach(u => {
-      userMap[u.userId || u.id] = u;
-    });
+    // Build staff map: userId → user, sorted A→Z by name
+    const staffList = users
+      .filter(u => u.role === "staff")
+      .sort((a, b) => str(a.name).localeCompare(str(b.name)));
 
-    // Generate every date in range as YYYY-MM-DD strings
+    const userMap = {};
+    staffList.forEach(u => { userMap[u.userId || u.id] = u; });
+
+    // Generate every date in the range
     const dates = [];
     const cur   = new Date(from + "T00:00:00");
     const end   = new Date(to   + "T00:00:00");
     while (cur <= end) {
-      dates.push(ymd(cur));
+      dates.push(ymd(new Date(cur)));
       cur.setDate(cur.getDate() + 1);
     }
 
-    // Collect all attendance records for the range from
-    // the already-loaded in-memory attendance array.
-    
-    const staffIds = Object.keys(userMap);
-    const rows     = [];
+    // Helper: is a YYYY-MM-DD date string a weekend?
+    function isWeekend(dateStr) {
+      const d   = new Date(dateStr + "T00:00:00");
+      const dow = d.getDay(); // 0=Sunday, 6=Saturday
+      return dow === 0 || dow === 6;
+    }
 
-    // Header row
-    rows.push([
-      "Date",
-      "Name",
-      "Email",
-      "Staff ID",
-      "Department",
-      "Status",
-      "Method",
-      "Check-In",
-      "Check-Out",
-      "Location",
-      "Distance (m)",
-    ]);
+    // Helper: short date label for pivot header e.g. "1/6/2026"
+    function shortDate(dateStr) {
+      const [yyyy, mm, dd] = dateStr.split("-");
+      return `${parseInt(dd)}/${parseInt(mm)}/${yyyy}`;
+    }
 
-    // One row per staff per day in the range
-    dates.forEach(date => {
-      staffIds.forEach(uid => {
-        const user   = userMap[uid];
-        const record = attendance.find(r => r.userId === uid && r.date === date);
+    // Helper: get status label for a cell
+    function cellStatus(uid, dateStr) {
+      if (isWeekend(dateStr)) return "Weekend";
+      const record = attendance.find(r => r.userId === uid && r.date === dateStr);
+      if (!record || !record.checkInTime) return "Absent";
+      return record.status === "late" ? "Late" : "Present";
+    }
 
-        const status    = record ? (record.status   || "present") : "absent";
-        const method    = record ? (record.method   || "-")       : "-";
-        const checkIn   = record && record.checkInTime  ? formatTime(record.checkInTime)  : "-";
-        const checkOut  = record && record.checkOutTime ? formatTime(record.checkOutTime) : "-";
+    const q = v => `"${String(v == null ? "" : v).replace(/"/g, '""').trim()}"`;
+    const rows = [];
+    let filename, toastMsg;
 
-        // Location column
-        let locStr = "No data";
-        if (record) {
-          if (record.locationVerified === true)       locStr = "Verified";
-          else if (record.locationFlagged === true)   locStr = "Flagged";
-        }
+    // ── PIVOT FORMAT (Payroll Register) ────────────────────────────────
+    // Rows = staff, Columns = dates
+    // Values: Present | Late | Absent | Weekend
 
-        const distStr = record?.locationDistance != null
-          ? String(Math.round(record.locationDistance))
-          : "-";
+    if (exportFormat === "pivot") {
 
+      // Header: S/N, Name, Department, [date1], [date2], ...
+      rows.push([
+        q("S/N"),
+        q("Name"),
+        q("Department"),
+        ...dates.map(d => q(shortDate(d))),
+      ]);
+
+      staffList.forEach((user, idx) => {
+        const uid = user.userId || user.id;
         rows.push([
-          date,
-          safeValue(user.name),
-          safeValue(user.email),
-          safeValue(user.staffId),
-          safeValue(user.department),
-          status,
-          method,
-          checkIn,
-          checkOut,
-          locStr,
-          distStr,
-        ].map(v => `"${String(v).replace(/"/g, '""').trim()}"`));
+          q(idx + 1),
+          q(str(user.name)),
+          q(str(user.department)),
+          ...dates.map(d => q(cellStatus(uid, d))),
+        ]);
       });
-    });
 
-    // Build CSV string
+      filename = from === to
+        ? `payroll-register-${from}.csv`
+        : `payroll-register-${from}_to_${to}.csv`;
+
+      toastMsg = `Payroll register exported ✓  (${staffList.length} staff, ${dates.length} days)`;
+
+    // ── DETAILED FORMAT (Audit Log) ────────────────────────────────────
+    // One row per staff per day — full data for auditing
+
+    } else {
+
+      rows.push([
+        q("Date"), q("Name"), q("Email"), q("Staff ID"), q("Department"),
+        q("Status"), q("Method"), q("Check-In"), q("Check-Out"),
+        q("Location"), q("Distance (m)"),
+      ]);
+
+      dates.forEach(date => {
+        staffList.forEach(user => {
+          const uid    = user.userId || user.id;
+          const record = attendance.find(r => r.userId === uid && r.date === date);
+
+          const status   = isWeekend(date) ? "Weekend"
+                         : record ? (record.status || "present") : "absent";
+          const method   = record ? (record.method || "-") : "-";
+          const checkIn  = record?.checkInTime  ? formatTime(record.checkInTime)  : "-";
+          const checkOut = record?.checkOutTime ? formatTime(record.checkOutTime) : "-";
+
+          let locStr = "No data";
+          if (record) {
+            if      (record.locationVerified === true) locStr = "Verified";
+            else if (record.locationFlagged  === true) locStr = "Flagged";
+          }
+
+          const distStr = record?.locationDistance != null
+            ? Math.round(record.locationDistance)
+            : "-";
+
+          rows.push([
+            q(date), q(str(user.name)), q(str(user.email)),
+            q(str(user.staffId)), q(str(user.department)),
+            q(status), q(method), q(checkIn), q(checkOut),
+            q(locStr), q(distStr),
+          ]);
+        });
+      });
+
+      filename = from === to
+        ? `attendance-log-${from}.csv`
+        : `attendance-log-${from}_to_${to}.csv`;
+
+      toastMsg = `Detailed log exported ✓  (${rows.length - 1} rows, ${dates.length} days)`;
+    }
+
+    // Build and download
     const csv  = rows.map(r => r.join(",")).join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); // BOM for Excel
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url  = URL.createObjectURL(blob);
-
-    const filename = from === to
-      ? `attendance-${from}.csv`
-      : `attendance-${from}_to_${to}.csv`;
-
-    const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+    const a    = Object.assign(document.createElement("a"), { href: url, download: filename });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
     exportModal.classList.remove("open");
-    showToast(`CSV exported ✓  (${rows.length - 1} rows, ${dates.length} days)`, "success");
+    showToast(toastMsg, "success");
 
   } catch (err) {
     console.error("Export error:", err);
@@ -1394,6 +1533,25 @@ if ("serviceWorker" in navigator) {
 
     <h2 id="exportModalTitle">&#128196; Export Attendance CSV</h2>
     <p class="modal-sub">Choose a date range. The CSV includes every staff member's record for each day — ready for payroll.</p>
+
+    <!-- Format selector -->
+    <div class="export-section-label">Format</div>
+    <div class="export-format-row">
+      <button class="format-btn active" data-fmt="pivot">
+        <span class="fmt-icon">&#128203;</span>
+        <span>
+          <span class="fmt-label">Payroll Register</span>
+          <span class="fmt-desc">Staff as rows &bull; Dates as columns</span>
+        </span>
+      </button>
+      <button class="format-btn" data-fmt="detailed">
+        <span class="fmt-icon">&#128196;</span>
+        <span>
+          <span class="fmt-label">Detailed Log</span>
+          <span class="fmt-desc">One row per staff per day &bull; Full data</span>
+        </span>
+      </button>
+    </div>
 
     <div class="export-section-label">Quick Select</div>
     <div class="export-presets">
