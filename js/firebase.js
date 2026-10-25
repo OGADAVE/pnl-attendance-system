@@ -9,9 +9,6 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { getAnalytics, isSupported }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-
 // ==========================================
 // 🔥 FIREBASE CONFIG
 // ==========================================
@@ -57,22 +54,15 @@ export const db =
 
 let analytics = null;
 
-isSupported().then((supported)=>{
-
-  if(supported){
-
-    analytics =
-      getAnalytics(app);
-
+// Loaded lazily after the page is idle so it never blocks first render
+const loadAnalytics = async () => {
+  try {
+    const mod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js");
+    if (await mod.isSupported()) analytics = mod.getAnalytics(app);
+  } catch (err) {
+    console.warn("Analytics unavailable", err);
   }
-
-}).catch((err)=>{
-
-  console.warn(
-    "Analytics unavailable",
-    err
-  );
-
-});
+};
+(window.requestIdleCallback || ((f) => setTimeout(f, 3000)))(loadAnalytics);
 
 export { analytics };

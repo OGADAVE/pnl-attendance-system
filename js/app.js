@@ -24,19 +24,15 @@ import {
 // 📷 Capture Camera Image
 // ==========================================
 
-export function captureImage(videoElement) {
-
+export function captureImage(videoElement, maxWidth = 320, quality = 0.6) {
+  const vw = videoElement.videoWidth || 640;
+  const vh = videoElement.videoHeight || 480;
+  const scale = Math.min(1, maxWidth / vw);
   const canvas = document.createElement("canvas");
-
-  canvas.width = videoElement.videoWidth;
-  canvas.height = videoElement.videoHeight;
-
-  const ctx = canvas.getContext("2d");
-
-  ctx.drawImage(videoElement, 0, 0);
-
-  return canvas.toDataURL("image/jpeg");
-
+  canvas.width = Math.round(vw * scale);
+  canvas.height = Math.round(vh * scale);
+  canvas.getContext("2d").drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
 }
 
 // ==========================================
