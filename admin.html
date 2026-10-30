@@ -639,7 +639,7 @@ import { auth, db }              from "./js/firebase.js";
 import { protectPage, logoutUser } from "./js/auth.js";
 
 import {
-  collection, onSnapshot,
+  collection, onSnapshot, query, where, getDocs,
   doc, setDoc, getDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -804,6 +804,7 @@ function initializeRealtime() {
   onSnapshot(
     collection(db, "users"),
     snapshot => {
+      usersLoaded = true;
       users = snapshot.docs.map(docSnap => ({
         ...docSnap.data(),          // spread first so our explicit fields win
         id:     docSnap.id,
@@ -811,26 +812,48 @@ function initializeRealtime() {
       }));
       scheduleRender();
     },
-    error => {
-      console.error("Users snapshot error:", error);
-      showToast("Failed to load users", "error");
-    }
+    error => showLoadError("users", error)
   );
 
-  // Attendance collection
-  onSnapshot(
-    collection(db, "attendance"),
+  // Attendance: only the selected day is streamed (fast); export fetches its own range.
+  listenAttendance();
+
+  // If nothing has arrived after 12s, say so instead of spinning forever
+  setTimeout(() => {
+    if (!usersLoaded || !attendanceLoaded) {
+      tableBody.innerHTML = `<tr><td colspan="10" class="empty">Still connecting to the database… check your internet, disable any VPN/ad-blocker for this site, or press Apply Filters to retry.</td></tr>`;
+    }
+  }, 12000);
+}
+
+let usersLoaded = false, attendanceLoaded = false;
+let unsubAttendance = null, listeningDate = null;
+
+function showLoadError(what, error) {
+  console.error(what + " snapshot error:", error);
+  const code = error && error.code ? error.code : "error";
+  tableBody.innerHTML = `<tr><td colspan="10" class="empty">Could not load ${what} (${esc(code)}). ${
+    code === "permission-denied" ? "Firestore security rules are blocking this admin account from reading it." : "Check your connection and press Apply Filters to retry."
+  }</td></tr>`;
+  showToast(`Failed to load ${what}: ${code}`, "error");
+}
+
+function listenAttendance() {
+  const date = dateFilter.value || getToday();
+  if (date === listeningDate && unsubAttendance) return;
+  if (unsubAttendance) unsubAttendance();
+  listeningDate = date;
+  attendanceLoaded = false;
+  unsubAttendance = onSnapshot(
+    query(collection(db, "attendance"), where("date", "==", date)),
     snapshot => {
-      attendance = snapshot.docs.map(docSnap => ({
-        ...docSnap.data(),
-        id: docSnap.id,
-      }));
+      attendanceLoaded = true;
+      // keep any other days already fetched (e.g. by export), replace this day
+      attendance = attendance.filter(r => r.date !== date)
+        .concat(snapshot.docs.map(d => ({ ...d.data(), id: d.id })));
       scheduleRender();
     },
-    error => {
-      console.error("Attendance snapshot error:", error);
-      showToast("Failed to load attendance", "error");
-    }
+    error => showLoadError("attendance", error)
   );
 }
 
@@ -1319,6 +1342,12 @@ doExportBtn.addEventListener("click", async () => {
   exportSummary.className   = "export-summary";
 
   try {
+    // Fetch the full requested range (the live listener only holds one day)
+    const rangeSnap = await getDocs(query(collection(db, "attendance"),
+      where("date", ">=", from), where("date", "<=", to)));
+    attendance = attendance.filter(r => r.date < from || r.date > to)
+      .concat(rangeSnap.docs.map(d => ({ ...d.data(), id: d.id })));
+
     // Build staff map: userId → user, sorted A→Z by name
     const staffList = users
       .filter(u => u.role === "staff")
@@ -1467,7 +1496,8 @@ doExportBtn.addEventListener("click", async () => {
 // FILTERS
 // ══════════════════════════════════════
 
-applyBtn.addEventListener("click", render);
+applyBtn.addEventListener("click", () => { listenAttendance(); render(); });
+dateFilter.addEventListener("change", () => { listenAttendance(); render(); });
 
 // Also re-render on Enter key in search
 searchInput.addEventListener("keydown", e => {
